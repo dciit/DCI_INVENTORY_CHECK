@@ -18,7 +18,7 @@ function SummerizeGoods() {
                         </span>
                     </div>
                 </div>
-
+  
                 <div className="flex flex-row w-full gap-3 mt-5">
                     <div className=" flex justify-start gap-2">
                         <span className="p-3 border bg-green-500 text-lg text-white font-semibold text-start w-24">
