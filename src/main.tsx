@@ -4,11 +4,7 @@ import './index.css'
 import { ContextInterface } from './interface/main.interface.ts'
 import { Provider } from 'react-redux'
 import { store } from './redux/store.ts'
-import App from './App.tsx'
-import InventoryCheck from './pages/inventorycheck.tsx'
-import AuditeeFill from './pages/audteefill.tsx'
-import AuditorFill from './pages/audtorfill.tsx'
-import SummerizeGoods from './pages/summerizegoods.tsx'
+import Routers from './Routers.tsx'
 const context: ContextInterface = {
   appname: 'IT TEMPLATE',
   style: {
@@ -20,7 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeContext.Provider value={context}>
       <Provider store={store}>
-        <SummerizeGoods />
+        <Routers />
       </Provider>
     </ThemeContext.Provider>
   </React.StrictMode>,
