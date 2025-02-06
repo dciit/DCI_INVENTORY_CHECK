@@ -11,24 +11,24 @@ function InventoryCheck() {
                         </div>
                         <div className="flex flex-row  mt-3 gap-5">
                             <span className="w-1/4 p-3 border bg-blue-900 text-lg text-white font-semibold items-center">YYYYMM</span>
-                            <div className="p-3 border bg-blue-900 text-xl text-white font-semibold items-start w-full">202419</div>
+                            <div className="p-3 border bg-blue-900 text-xl text-white font-semibold items-start w-full">202409</div>
                         </div>
                         <div className="flex flex-row mt-3 gap-5">
                             <span className="w-1/4 p-3 border bg-blue-900 text-lg text-white font-semibold items-center">WC</span>
-                            <Input type="text" id="wc" placeholder="Enter WC to your inspect" className="border border-black"/>
+                            <div className="p-3 border bg-blue-900 text-xl text-white font-semibold items-start w-full"></div>
                         </div>
                         <div className="flex flex-row gap-5 mt-3">
                             <div className="w-1/4 items-center p-3 border bg-blue-900 text-xl text-white font-semibold">
-                                DRAWING
+                                DRAWING NO
                             </div>
-                            <Input type="text" id="drawing" placeholder="Enter Darwing to your inspect" className="w-3/4 border border-black" />
+                            <div className="p-3 border bg-blue-900 text-xl text-white font-semibold items-start w-3/4"></div>
                             <div className="w-1/5 items-start p-3 border rounded text-lg text-black font-semibold">
-                                Cm.
+                                
                             </div>
                         </div>
                         <div className="flex flex-row mt-3 gap-5">
-                            <span className="w-1/4 p-3 border bg-blue-900 text-lg text-white font-semibold items-center">PARTNAME</span>
-                            <Input type="text" id="partname" placeholder="Enter Partname to your inspect" className="border border-black"/>
+                            <span className="w-1/4 p-3 border bg-blue-900 text-lg text-white font-semibold items-center">PART NAME</span>
+                            <div className="p-3 border bg-blue-900 text-xl text-white font-semibold items-start w-full"></div>
                         </div>
                         <div className="flex flex-row mt-8 gap-5">
                             <div className="w-1/4 items-center p-3 border bg-blue-900 text-xl text-white font-semibold">
@@ -36,7 +36,7 @@ function InventoryCheck() {
                             </div>
                             <Input type="text" id="qty" placeholder="Enter QTY to your inspect" className="w-3/4 border border-black hover:border-black"/>
                             <div className="w-1/5 items-start p-3 border rounded text-lg text-black font-semibold">
-                                PCS
+                                
                             </div>
                         </div>
                     </div>

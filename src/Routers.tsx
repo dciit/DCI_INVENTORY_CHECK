@@ -3,6 +3,7 @@ import App from "./App";
 import AuditeeFill from "./pages/audteefill";
 import AuditorFill from "./pages/audtorfill";
 import SummerizeGoods from "./pages/summerizegoods";
+import InventoryCheck from "./pages/inventorycheck";
 
 
 
@@ -14,6 +15,7 @@ function Routers() {
         <Route path="/auditee" element={<AuditeeFill />} />
         <Route path="/auditor" element={<AuditorFill />} />
         <Route path="/summerizegoods" element={< SummerizeGoods/>} />
+        <Route path="/inventorycheck" element={<InventoryCheck/>} />
       </Routes>
     </Router>
   );

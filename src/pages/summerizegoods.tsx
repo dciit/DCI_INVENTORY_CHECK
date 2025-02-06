@@ -3,7 +3,7 @@ import imgReact from "../assets/excelpic.png"
 import { Button, Input } from "antd"
 import { useState } from "react";
 
-interface RowData{
+interface RowData {
     no: number;
     wc: string;
     partno: string;
@@ -34,15 +34,15 @@ function SummerizeGoods() {
         { no: 14, wc: "901", partno: "2PD03210-1", cm: "B", partname: "ACCUMULATOR ASSY", qtytotle: 0, date: "05022025", model: "1YC20EXD#A", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
         { no: 15, wc: "901", partno: "2PD04447-1", cm: "D", partname: "ACCUMULATOR ASSY", qtytotle: 0, date: "05022025", model: "1YC20GXD", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
         { no: 16, wc: "901", partno: "2P575813-1", cm: "", partname: "PIPE ASSY", qtytotle: 0, date: "04022025", model: "1YC13AXD", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { no: 17, wc: "901", partno: "2P581209-1", cm: "", partname: "PIPE ASSY", qtytotle: 0, date: "05022025", model: "1YC15AXD", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+        { no: 17, wc: "901", partno: "2P581209-1", cm: "", partname: "PIPE ASSY", qtytotle: 0, date: "05022025", model: "1YC15AXD", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
         { no: 18, wc: "901", partno: "2P581209-2", cm: "", partname: "PIPE ASSY", qtytotle: 0, date: "04022025", model: "1YC20eXD", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
         { no: 19, wc: "901", partno: "2PD03210-1", cm: "B", partname: "ACCUMULATOR ASSY", qtytotle: 0, date: "05022025", model: "1YC20EXD#A", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { no: 20, wc: "901", partno: "2PD04447-1", cm: "D", partname: "ACCUMULATOR ASSY", qtytotle: 0, date: "05022025", model: "1YC20GXD", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+        { no: 20, wc: "901", partno: "2PD04447-1", cm: "D", partname: "ACCUMULATOR ASSY", qtytotle: 0, date: "05022025", model: "1YC20GXD", values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
     ];
 
     const [tableData, setTableData] = useState(initialData);
 
-    
+
 
     return (
         <head className="flex flex-col px-8 py-8">
@@ -84,25 +84,26 @@ function SummerizeGoods() {
                 </div>
             </div>
             <body className="mt-8">
-                <div className="overflow-x-auto p-4 mt-6">
-                    <table className="border-collapse border border-gray-400 w-full">
+                <div className="overflow-x-auto max-h-[500px]">
+                    <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
                         {/* Header */}
                         <thead>
                             <tr className="bg-gray-200">
-                                <th className="border border-gray-400 px-4 py-2" rowSpan={2}>NO</th>
-                                <th className="border border-gray-400 px-4 py-2" rowSpan={2}>WC</th>
-                                <th className="border border-gray-400 px-4 py-2" rowSpan={2}>Part No</th>
-                                <th className="border border-gray-400 px-4 py-2" rowSpan={2}>CM</th>
-                                <th className="border border-gray-400 px-4 py-2" rowSpan={2}>PART NAME</th>
-                                <th className="border border-gray-400 px-4 py-2 whitespace-nowrap" colSpan={1}>Last Update</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky left-0 bg-white z-10 w-[50px] text-center shadow-md" rowSpan={2}>NO</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-right shadow-md" rowSpan={2}>WC</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] text-center shadow-md" rowSpan={2}>Part No</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky left-[230px] bg-white z-10 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky left-[290px] bg-white z-10 w-[200px] text-center shadow-md" rowSpan={2}>PART NAME</th>
+
+                                <th className="border border-gray-400 px-4 py-2 whitespace-nowrap w-[120px] text-right" colSpan={1}>Last Update</th>
                                 {tableData.map((row, rowindex) => (
-                                    <th key={rowindex} className="border border-gray-400 px-2 py-1 text-center">{row.date}</th>
+                                    <th key={rowindex} className="border border-gray-400 px-2 py-1 text-right w-[100px]">{row.date}</th>
                                 ))}
                             </tr>
                             <tr className="bg-gray-200">
-                                <th className="border border-gray-400 px-4 py-2">Totle</th>
+                                <th className="border border-gray-400 px-4 py-2 w-[100px] text-center">Total</th>
                                 {tableData.map((row, rowIndex) => (
-                                    <th key={rowIndex} className="border border-gray-400 px-2 py-1 text-center">{row.model}</th>
+                                    <th key={rowIndex} className="border border-gray-400 text-center max-w-full text-sm">{row.model}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -111,20 +112,22 @@ function SummerizeGoods() {
                         <tbody>
                             {tableData.map((row, rowIndex) => (
                                 <tr key={rowIndex} className="hover:bg-gray-100">
-                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.no}</td>
-                                    <td className="border border-gray-400 px-4 py-2">{row.wc}</td>
-                                    <td className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">{row.partno}</td>
-                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.cm}</td>
-                                    <td className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">{row.partname}</td>
-                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.qtytotle}</td>
+                                    <td className="border border-gray-400 px-4 py-2 sticky left-0 bg-white z-10 w-[50px] text-center  shadow-md">{row.no}</td>
+                                    <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-right shadow-md">{row.wc}</td>
+                                    <td className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] whitespace-nowrap text-right shadow-md">{row.partno}</td>
+                                    <td className="border border-gray-400 px-4 py-2 sticky left-[230px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
+                                    <td className="border border-gray-400 px-4 py-2 sticky left-[290px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partname}</td>
+
+                                    <td className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">{row.qtytotle}</td>
                                     {row.values.map((value, i) => (
-                                        <td key={i} className="border border-gray-400 px-2 py-1 text-center">{value}</td>
+                                        <td key={i} className="border border-gray-400 px-2 py-1 text-center whitespace-nowrap ">{value}</td>
                                     ))}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+
 
             </body>
         </head>
