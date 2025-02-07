@@ -9,7 +9,7 @@ interface RowData {
     partnumber: string;
     description: string;
     qtytotle: number; // ใช้ number สำหรับผลรวม
-    values: number[];
+    values: any[];
 
 }
 
@@ -28,6 +28,12 @@ function AuditeeFill() {
         { wc: 902, modelname: "J", codemodel: "A#12", amout: 2, partnumber: "4PD06413-1", description: "TERMINAL COVERNUT", qtytotle: 0, values: [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0] }
     ];
 
+    const initialDataTemp: any[] = [
+        { process: 1, processName: 'MAIN', parts: ['PART-1', 'PART-2'] },
+        { process: 2, processName: 'FINAL', parts: ['PART-1', 'PART-2', 'PART-3'] }
+    ]
+
+
     // ใช้ useState เพื่อจัดการค่าของแต่ละช่อง
     const [tableData, setTableData] = useState<RowData[]>([]);
     const [wc, setWc] = useState<string>("");
@@ -42,7 +48,7 @@ function AuditeeFill() {
     const headerSum = headerValues.reduce((acc, val) => acc + val, 0);
 
     const handleSearch = (event: React.MouseEvent<HTMLElement>) => {
-        event.preventDefault(); 
+        event.preventDefault();
         const filtered = initialData.filter(
             (item) =>
                 (wc === "" || item.wc.toString() === wc) &&
@@ -52,7 +58,7 @@ function AuditeeFill() {
         setTableData(filtered);
     };
 
-    const handleHeaderInputChange = useCallback((index: number, event: ChangeEvent<HTMLInputElement>) =>{
+    const handleHeaderInputChange = useCallback((index: number, event: ChangeEvent<HTMLInputElement>) => {
         setHeaderValues(prev => {
             const newHeaderValues = [...prev];
             newHeaderValues[index] = parseInt(event.target.value) || 0;
@@ -68,7 +74,7 @@ function AuditeeFill() {
                     return headerValues[colIndex] * row.amout;
                 });
 
-                const newQtyTotal = newValuse.reduce((sum, val) => sum+ (val !== 1 ? val : 0), 0);
+                const newQtyTotal = newValuse.reduce((sum, val) => sum + (val !== 1 ? val : 0), 0);
 
                 return {
                     ...row,
@@ -104,13 +110,13 @@ function AuditeeFill() {
                     <div className="flex justify-between gap-2">
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3 bg-green-500 border text-lg text-white font-semibold items-center">W/C:</span>
-                            <Input 
-                                type="text" 
-                                id="wc" 
-                                className="p-2.5 border border-black hover:border-black" 
+                            <Input
+                                type="text"
+                                id="wc"
+                                className="p-2.5 border border-black hover:border-black"
                                 value={wc}
                                 onChange={(e) => setWc(e.target.value)}
-                                />
+                            />
                         </div>
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3 bg-green-500 border text-lg text-white font-semibold items-center">Model Name:</span>
@@ -125,7 +131,7 @@ function AuditeeFill() {
                     <div id="search" className="flex flex-1 justify-end mt-7">
                         <Button
                             onClick={handleSearch}
-                            htmlType="submit" 
+                            htmlType="submit"
                             className="text-black bg-blue-300 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
                             Search
                         </Button>
@@ -135,7 +141,7 @@ function AuditeeFill() {
                     <p className="text-red-600 font-semibold mt-1">*โปรดใส่ Model name หรือ Code model ก่อนทำการค้นหา</p>
                 </div>
             </div>
-            
+
             <body className="mt-10">
                 {/*process to produce*/}
                 <div className="container rounded-2xl border-2 border-blue-800 p-10 ml-3 bg-white justify-start w-[25%]">
@@ -167,7 +173,7 @@ function AuditeeFill() {
                                             type="text"
                                             className="bg-yellow-50"
                                             value={headerValues[i]}
-                                            onChange={ (e) => handleHeaderInputChange(i, e)}
+                                            onChange={(e) => handleHeaderInputChange(i, e)}
                                         />
                                     </th>
                                 ))}
@@ -179,7 +185,10 @@ function AuditeeFill() {
                             {tableData.map((row, rowIndex) => (
                                 <tr key={rowIndex} className="hover:bg-gray-100">
                                     <td className="border border-gray-400 px-4 py-2 text-center">{row.amout}</td>
-                                    <td className="border border-gray-400 px-4 py-2">{row.partnumber}</td>
+                                    <div className="flex flex-row">
+                                        <td className="border px-4 py-4 w-1/2">{row.partnumber}</td>
+                                        <td className="border  px-4 py-4 w-60">{row.description}</td>
+                                    </div>
                                     <td className="border border-gray-400 px-4 py-2 text-center">{row.qtytotle}</td>
                                     {row.values.map((value, colIndex) => (
                                         <td key={colIndex} className="border border-gray-400 text-center">
@@ -191,6 +200,26 @@ function AuditeeFill() {
                                     ))}
                                 </tr>
                             ))}
+                        </tbody>
+                    </table>
+
+                    <table>
+                        <tbody>
+                            {
+                                [...Array(10)].map((n, i) => {
+                                    let process = i + 1;
+                                    let partName: string = `PART-${process}`
+                                    return <tr>
+                                        <td>{partName}</td>
+                                        {
+                                            initialDataTemp.map((oProcess, iProcess) => {
+                                                let isUsed: boolean = oProcess.parts.includes(partName);
+                                                return <td key={iProcess} className="border">{isUsed ? '0' : ''}</td>
+                                            })
+                                        }
+                                    </tr>
+                                })
+                            }
                         </tbody>
                     </table>
                 </div>
