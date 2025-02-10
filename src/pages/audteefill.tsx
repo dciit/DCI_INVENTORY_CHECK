@@ -1,32 +1,16 @@
-import { Button, Input } from "antd"
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { Master, MasterData, MasterInterface, Partlist } from "@/interface/auditeecheck.interface";
+import { API_MASTER_CHECK_INVENTORY } from "@/service/master.service";
+import { API_PARTLIST_CHECK_INVENTORY } from "@/service/partlist.service";
+import { Button, Input, InputRef } from "antd"
+import axios from "axios";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
-interface RowData {
-    wc: number;
-    modelname: string;
-    codemodel: string;
-    amout: number;
-    partnumber: string;
-    description: string;
-    qtytotle: number; // ใช้ number สำหรับผลรวม
-    values: any[];
-
+interface PropPartUsed {
+    procName: string;
+    partNo: string[];
 }
 
 function AuditeeFill() {
-
-    const initialData: RowData[] = [
-        { wc: 901, modelname: "A", codemodel: "A#1D", amout: 3, partnumber: "M1YC15AXD#A", description: "MECHASSY", qtytotle: 0, values: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 901, modelname: "A", codemodel: "A#1D", amout: 1, partnumber: "3PD06369-1", description: "ROTOR ASSY", qtytotle: 0, values: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 901, modelname: "A", codemodel: "A#1D", amout: 2, partnumber: "3PD06368-1", description: "STATOR ASSY", qtytotle: 0, values: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 901, modelname: "A", codemodel: "A#1D", amout: 2, partnumber: "3PD06360-1", description: "PIPE ASSY", qtytotle: 0, values: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 901, modelname: "F", codemodel: "A#1D", amout: 2, partnumber: "4PD04133-1", description: "INLET TUBE-SUC", qtytotle: 0, values: [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 902, modelname: "F", codemodel: "A#12", amout: 3, partnumber: "W422386-1", description: "SEAL PLUG", qtytotle: 0, values: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 902, modelname: "G", codemodel: "A#12", amout: 2, partnumber: "3PD06357-1", description: "TERMINAL COVER", qtytotle: 0, values: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 902, modelname: "H", codemodel: "A#12", amout: 2, partnumber: "3PD06362-1", description: "TERMINAL COVERPACKING", qtytotle: 0, values: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 902, modelname: "I", codemodel: "A#12", amout: 2, partnumber: "3PD06878-1", description: "OVERLOAD RELAY", qtytotle: 0, values: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-        { wc: 902, modelname: "J", codemodel: "A#12", amout: 2, partnumber: "4PD06413-1", description: "TERMINAL COVERNUT", qtytotle: 0, values: [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0] }
-    ];
 
     const initialDataTemp: any[] = [
         { process: 1, processName: 'MAIN', parts: ['PART-1', 'PART-2'] },
@@ -34,29 +18,81 @@ function AuditeeFill() {
     ]
 
 
-    // ใช้ useState เพื่อจัดการค่าของแต่ละช่อง
-    const [tableData, setTableData] = useState<RowData[]>([]);
-    const [wc, setWc] = useState<string>("");
-    const [modelName, setModelName] = useState<string>("");
+    const [serach, setSearch] = useState<MasterInterface>({
+        serach: false,
+        load: false,
+        message: '',
+    })
+
+    const [searchData, setSearchData] = useState<MasterData>({
+        paramWCNO: '',
+        paramModel: ''
+    });
+
+    const [tableData, setTableData] = useState<Master[]>([]);
     const [codeModel, setCodeModel] = useState<string>("");
+    const [partlistData, setPartlistData] = useState<PropPartUsed[]>([]);
 
-    const valuesLength = tableData.length > 0 ? tableData[0].values.length : 0;
 
-    const [headerValues, setHeaderValues] = useState<number[]>(Array(valuesLength).fill(0));
 
-    // คำนวณผลรวมของ header inputs
+
+    const refWCNO = useRef<InputRef>(null);
+    const refModel = useRef<InputRef>(null);
+
+    async function handleSearchData() {
+        if (!searchData.paramWCNO || !searchData.paramModel) {
+            if (!searchData.paramWCNO) {
+                refWCNO.current?.focus();
+                setSearch({ ...serach, load: false, message: 'กรุณากรอก W/C' });
+                return;
+            }
+            if (!searchData.paramModel) {
+                refModel.current?.focus();
+                setSearch({ ...serach, load: false, message: 'กรุณากรอก model name' });
+                return;
+            }
+        }
+
+        let resSearch = await API_MASTER_CHECK_INVENTORY(searchData.paramWCNO, searchData.paramModel);
+        console.log("ค่าที่ได้จาก API:", resSearch);
+        console.log("ประเภทของ resSearch:", Array.isArray(resSearch) ? "Array" : typeof resSearch);
+
+        if (Array.isArray(resSearch) && resSearch.length > 0) {
+            setTableData(resSearch);
+        } else {
+            setTableData([]);
+        }
+
+        let groupByPartlist: PropPartUsed[] = [];
+        let resPartlist = await API_PARTLIST_CHECK_INVENTORY();
+        console.log('Data PartList:', resPartlist)
+
+        resPartlist.map((acc: any) => {
+            let indexOfProcName: number = groupByPartlist.findIndex((x: any) => x.procName == acc.proc_Name)
+            if (indexOfProcName != -1) {
+                groupByPartlist[indexOfProcName].partNo = groupByPartlist[indexOfProcName].partNo.concat(acc.partNo);
+            } else {
+                groupByPartlist.push({
+                    procName: acc.proc_Name,
+                    partNo: [acc.partNo]
+                })
+            }
+        })
+        console.log(groupByPartlist)
+        setPartlistData(groupByPartlist)
+
+    }
+
+    const procNameLength = partlistData.length;
+    //const valuesLength = partlistData.length > 0 ? partlistData[0].partNo.length : 0;
+    const [headerValues, setHeaderValues] = useState<number[]>(Array(procNameLength).fill(0));
     const headerSum = headerValues.reduce((acc, val) => acc + val, 0);
 
-    const handleSearch = (event: React.MouseEvent<HTMLElement>) => {
-        event.preventDefault();
-        const filtered = initialData.filter(
-            (item) =>
-                (wc === "" || item.wc.toString() === wc) &&
-                (modelName === "" || item.modelname.toLowerCase().includes(modelName.toLowerCase())) &&
-                (codeModel === "" || item.codemodel.toLowerCase().includes(codeModel.toLowerCase()))
-        );
-        setTableData(filtered);
-    };
+
+    useEffect(() => {
+        console.log("ข้อมูลใน tableData อัปเดต:", tableData);
+        console.log('ข้อมูลใน partlistData อัปเดต:', partlistData)
+    }, [tableData, partlistData]);
 
     const handleHeaderInputChange = useCallback((index: number, event: ChangeEvent<HTMLInputElement>) => {
         setHeaderValues(prev => {
@@ -66,24 +102,24 @@ function AuditeeFill() {
         });
     }, []);
 
-    useEffect(() => {
-        setTableData(prevTableData => {
-            return prevTableData.map(row => {
-                const newValuse = row.values.map((value, colIndex) => {
-                    if (value === 1) return 1;
-                    return headerValues[colIndex] * row.amout;
-                });
+    // useEffect(() => {
+    //     setTableData(prevTableData => {
+    //         return prevTableData.map(row => {
+    //             const newValuse = row.partNo.map((value: number, colIndex: any) => {
+    //                 if (value === 1) return 1;
+    //                 return headerValues[colIndex] * row.usageQty;
+    //             });
 
-                const newQtyTotal = newValuse.reduce((sum, val) => sum + (val !== 1 ? val : 0), 0);
+    //             const newQtyTotal = newValuse.reduce((sum: any, val: number) => sum + (val !== 1 ? val : 0), 0);
 
-                return {
-                    ...row,
-                    values: [...newValuse],
-                    qtytotle: newQtyTotal,
-                };
-            });
-        });
-    }, [headerValues]);
+    //             return {
+    //                 ...row,
+    //                 values: [...newValuse],
+    //                 qtytotle: newQtyTotal,
+    //             };
+    //         });
+    //     });
+    // }, [headerValues]);
 
 
 
@@ -111,26 +147,38 @@ function AuditeeFill() {
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3 bg-green-500 border text-lg text-white font-semibold items-center">W/C:</span>
                             <Input
+                                ref={refWCNO}
                                 type="text"
                                 id="wc"
                                 className="p-2.5 border border-black hover:border-black"
-                                value={wc}
-                                onChange={(e) => setWc(e.target.value)}
+                                autoFocus onChange={(e) => setSearchData({ ...searchData, paramWCNO: e.target.value })}
                             />
                         </div>
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3 bg-green-500 border text-lg text-white font-semibold items-center">Model Name:</span>
-                            <Input type="text" id="modelname" className="w-56 p-2.5 border border-black hover:border-black" />
+                            <Input
+                                ref={refModel}
+                                type="text"
+                                id="model"
+                                className="w-56 p-2.5 border border-black hover:border-black"
+                                autoFocus onChange={(e) => setSearchData({ ...searchData, paramModel: e.target.value })}
+                            />
                         </div>
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3 bg-green-500 border text-lg text-white font-semibold items-center">Code Model:</span>
-                            <Input type="text" id="codemodel" className="w-56 p-2.5 border border-black hover:border-black" />
+                            <Input
+                                type="text"
+                                id="codemodel"
+                                className="w-56 p-2.5 border border-black hover:border-black"
+                                value={codeModel}
+                                onChange={(e) => setCodeModel(e.target.value)}
+                            />
                         </div>
                     </div>
 
                     <div id="search" className="flex flex-1 justify-end mt-7">
                         <Button
-                            onClick={handleSearch}
+                            onClick={handleSearchData}
                             htmlType="submit"
                             className="text-black bg-blue-300 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
                             Search
@@ -143,11 +191,11 @@ function AuditeeFill() {
             </div>
 
             <body className="mt-10">
-                {/*process to produce*/}
+                {/*process to produce
                 <div className="container rounded-2xl border-2 border-blue-800 p-10 ml-3 bg-white justify-start w-[25%]">
                     <p className="text-lg text-black font-semibold">Process to produce</p>
 
-                </div>
+                </div>*/}
                 {/* Table */}
                 <div className="overflow-x-auto p-4">
                     <table className="border-collapse border border-gray-400 w-full">
@@ -155,9 +203,9 @@ function AuditeeFill() {
                         <thead>
                             <tr className="bg-gray-200">
                                 <th className="border border-gray-400 px-4 py-2" rowSpan={2}>จำนวน Part ประกอบ</th>
-                                <th className="border border-gray-400 px-4 py-2" colSpan={1}>CASE 1-29</th>
+                                <th className="border border-gray-400 px-4 py-2" colSpan={1}>Process</th>
                                 <th className="border border-gray-400 px-4 py-2" colSpan={1}>Qty Total</th>
-                                {Array.from({ length: valuesLength }, (_, i) => (
+                                {Array.from({ length: procNameLength }, (_, i) => (
                                     <th key={i} className="border border-gray-400 px-2 py-1 text-center">
                                         {i + 1}
                                     </th>
@@ -166,9 +214,8 @@ function AuditeeFill() {
                             <tr className="bg-gray-200">
                                 <th className="border border-gray-400 px-4 py-2">จำนวนCASEที่นับได้</th>
                                 <th className="border border-gray-400 px-4 py-2">{headerSum}</th>
-                                {Array.from({ length: valuesLength }, (_, i) => (
+                                {Array.from({ length: procNameLength }, (_, i) => (
                                     <th key={i} className="border border-gray-400 px-2 py-2 text-center">
-                                        {/* Input สำหรับแก้ไขค่า header ซึ่งจะใช้ state headerValues */}
                                         <Input
                                             type="text"
                                             className="bg-yellow-50"
@@ -184,43 +231,31 @@ function AuditeeFill() {
                         <tbody>
                             {tableData.map((row, rowIndex) => (
                                 <tr key={rowIndex} className="hover:bg-gray-100">
-                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.amout}</td>
+                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.usageQty}</td>
                                     <div className="flex flex-row">
-                                        <td className="border px-4 py-4 w-1/2">{row.partnumber}</td>
-                                        <td className="border  px-4 py-4 w-60">{row.description}</td>
+                                        <td className="border px-4 py-4 w-1/2">{row.partNo}</td>
+                                        <td className="border px-4 py-4 w-60">{row.proc_Name}</td>
                                     </div>
-                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.qtytotle}</td>
-                                    {row.values.map((value, colIndex) => (
-                                        <td key={colIndex} className="border border-gray-400 text-center">
-                                            <div
-                                                className={`w-full h-full text-center mt-1 ${value === 0 ? "bg-gray-600" : value === 1 ? "bg-white" : ""}`}
-                                            />
-                                            {value === 1 ? "" : value}
-                                        </td>
-                                    ))}
+                                    <td className="border border-gray-400 px-4 py-2 text-center">0</td>
+
+                                    {/* เปรียบเทียบ procName กับ partlistData */}
+                                    {partlistData.map((partItem, partIndex) => {
+                                        const isMatch = partItem.partNo.includes(row.partNo); 
+
+                                        return (
+                                            <td key={partIndex} className="border border-gray-400 text-center">
+                                                <div
+                                                    className={`w-full h-full text-center mt-1 ${isMatch ? "bg-green-500" : "bg-white"}`}
+                                                />
+                                                {isMatch ? 0 : ""} 
+                                            </td>
+                                        );
+                                    })}
+
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
 
-                    <table>
-                        <tbody>
-                            {
-                                [...Array(10)].map((n, i) => {
-                                    let process = i + 1;
-                                    let partName: string = `PART-${process}`
-                                    return <tr>
-                                        <td>{partName}</td>
-                                        {
-                                            initialDataTemp.map((oProcess, iProcess) => {
-                                                let isUsed: boolean = oProcess.parts.includes(partName);
-                                                return <td key={iProcess} className="border">{isUsed ? '0' : ''}</td>
-                                            })
-                                        }
-                                    </tr>
-                                })
-                            }
-                        </tbody>
                     </table>
                 </div>
 
