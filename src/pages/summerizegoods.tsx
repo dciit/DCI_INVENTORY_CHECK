@@ -50,6 +50,7 @@ function SummerizeGoods() {
                 <span className="w-1/6 p-6 border-2 border-black rounded-xl text-2xl text-white font-semibold text-center bg-[#005792]">
                     AUDITEE
                 </span>
+
                 <p className="text-3xl font-bold text-center underline">สรุปรายการ Part ของ Finished Goods (Assembly Line)</p>
                 <div className="flex flex-col gap-3">
                     <span className="pt-3 px-12 border border-black bg-gray-400 text-2xl text-black font-bold text-center flex items-center justify-center gap-2">
