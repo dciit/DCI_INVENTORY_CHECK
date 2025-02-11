@@ -214,7 +214,7 @@ function AuditeeFill() {
                                         <td className="border px-4 py-4 w-1/2">{row.partNo}</td>
                                         <td className="border px-4 py-4 w-60">{row.proc_Name}</td>
                                     </div>
-                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.totalQty}</td>
+                                    <td className="border border-gray-400 px-4 py-2 text-center">0</td>
 
                                     {/* เปรียบเทียบ procName กับ partlistData */}
                                     {partlistData.map((partItem, partIndex) => {
