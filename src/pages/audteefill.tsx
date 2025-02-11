@@ -1,22 +1,11 @@
-import { Master, MasterData, MasterInterface, Partlist } from "@/interface/auditeecheck.interface";
+import { Master, MasterData, MasterInterface, Partlist, PropPartUsed } from "@/interface/compressorcheck";
 import { API_MASTER_CHECK_INVENTORY } from "@/service/master.service";
 import { API_PARTLIST_CHECK_INVENTORY } from "@/service/partlist.service";
-import { Button, Input, InputRef } from "antd"
-import axios from "axios";
+import { Alert, Button, Input, InputRef } from "antd"
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
-interface PropPartUsed {
-    procName: string;
-    partNo: string[];
-}
 
 function AuditeeFill() {
-
-    const initialDataTemp: any[] = [
-        { process: 1, processName: 'MAIN', parts: ['PART-1', 'PART-2'] },
-        { process: 2, processName: 'FINAL', parts: ['PART-1', 'PART-2', 'PART-3'] }
-    ]
-
 
     const [serach, setSearch] = useState<MasterInterface>({
         serach: false,
@@ -32,9 +21,6 @@ function AuditeeFill() {
     const [tableData, setTableData] = useState<Master[]>([]);
     const [codeModel, setCodeModel] = useState<string>("");
     const [partlistData, setPartlistData] = useState<PropPartUsed[]>([]);
-
-
-
 
     const refWCNO = useRef<InputRef>(null);
     const refModel = useRef<InputRef>(null);
@@ -80,19 +66,11 @@ function AuditeeFill() {
         })
         console.log(groupByPartlist)
         setPartlistData(groupByPartlist)
-
     }
 
     const procNameLength = partlistData.length;
-    //const valuesLength = partlistData.length > 0 ? partlistData[0].partNo.length : 0;
     const [headerValues, setHeaderValues] = useState<number[]>(Array(procNameLength).fill(0));
     const headerSum = headerValues.reduce((acc, val) => acc + val, 0);
-
-
-    useEffect(() => {
-        console.log("ข้อมูลใน tableData อัปเดต:", tableData);
-        console.log('ข้อมูลใน partlistData อัปเดต:', partlistData)
-    }, [tableData, partlistData]);
 
     const handleHeaderInputChange = useCallback((index: number, event: ChangeEvent<HTMLInputElement>) => {
         setHeaderValues(prev => {
@@ -103,23 +81,25 @@ function AuditeeFill() {
     }, []);
 
     // useEffect(() => {
-    //     setTableData(prevTableData => {
-    //         return prevTableData.map(row => {
-    //             const newValuse = row.partNo.map((value: number, colIndex: any) => {
-    //                 if (value === 1) return 1;
-    //                 return headerValues[colIndex] * row.usageQty;
-    //             });
+    //     const updatePartlist = partlistData.map((partItem: any) => {
+    //         const updatedPart = { ...partItem};
 
-    //             const newQtyTotal = newValuse.reduce((sum: any, val: number) => sum + (val !== 1 ? val : 0), 0);
-
-    //             return {
-    //                 ...row,
-    //                 values: [...newValuse],
-    //                 qtytotle: newQtyTotal,
-    //             };
+    //         tableData.forEach((tableRow, index) => {
+    //             if (tableRow.partNo.includes(partItem.partNo)) {
+    //                 updatedPart.usageQty = headerValues[index] * tableRow.usageQty
+    //             }
     //         });
-    //     });
-    // }, [headerValues]);
+
+    //         return updatedPart;
+    //     })
+
+    //     setPartlistData(updatePartlist);
+    // })
+
+    useEffect(() => {
+        console.log("ข้อมูลใน tableData อัปเดต:", tableData);
+        console.log("ข้อมูลใน partlistData อัปเดต:", partlistData)
+    }, [headerValues, tableData, partlistData]);
 
 
 
@@ -185,9 +165,7 @@ function AuditeeFill() {
                         </Button>
                     </div>
                 </div>
-                <div className="flex flex-row">
-                    <p className="text-red-600 font-semibold mt-1">*โปรดใส่ Model name หรือ Code model ก่อนทำการค้นหา</p>
-                </div>
+                <Alert message="กรอกข้อมูลให้ครบก่อนทำการค้นหา" type="warning" className="w-[20%] mt-2" showIcon />
             </div>
 
             <body className="mt-10">
@@ -236,18 +214,18 @@ function AuditeeFill() {
                                         <td className="border px-4 py-4 w-1/2">{row.partNo}</td>
                                         <td className="border px-4 py-4 w-60">{row.proc_Name}</td>
                                     </div>
-                                    <td className="border border-gray-400 px-4 py-2 text-center">0</td>
+                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.totalQty}</td>
 
                                     {/* เปรียบเทียบ procName กับ partlistData */}
                                     {partlistData.map((partItem, partIndex) => {
-                                        const isMatch = partItem.partNo.includes(row.partNo); 
+                                        const isMatch = partItem.partNo.includes(row.partNo);
 
                                         return (
                                             <td key={partIndex} className="border border-gray-400 text-center">
                                                 <div
                                                     className={`w-full h-full text-center mt-1 ${isMatch ? "bg-green-500" : "bg-white"}`}
                                                 />
-                                                {isMatch ? 0 : ""} 
+                                                {isMatch ? 0 : ""}
                                             </td>
                                         );
                                     })}

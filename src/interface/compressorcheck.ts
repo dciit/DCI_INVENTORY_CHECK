@@ -18,6 +18,7 @@ export interface Master {
     cm: string;
     usageQty: number;
     orderNo: number;
+    totalQty: "0";
 }
 
 export interface Partlist {
@@ -29,4 +30,10 @@ export interface Partlist {
     cm: string;
     usageQty: number;
     orderNo: number; 
+    totalQty: 0;
+}
+
+export interface PropPartUsed {
+    procName: string;
+    partNo: string[];
 }
