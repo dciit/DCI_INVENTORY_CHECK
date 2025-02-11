@@ -108,6 +108,18 @@ function AuditorFill() {
     //             };
     //         });
     //     });
+
+    // const updatedPartlistData = partlistData.map((part) => {
+    //   const matchingTableData = tableData.find((data) => data.partNo === part.partNo);
+    //   if (matchingTableData) {
+    //     return { ...part, qty: matchingTableData.usageQty * headerValues[tableData.indexOf(matchingTableData)] };
+    //   }
+    //   return part;
+    // });
+
+    // // ✅ คำนวณผลรวมทั้งหมด
+    // const totalQty = updatedPartlistData.reduce((sum, part) => sum + part.qty, 0);
+    // setQtyTotal({ qtytotal: totalQty });
     // }, [headerValues]);
 
     return (
@@ -178,13 +190,11 @@ function AuditorFill() {
             </div>
 
             <body className="mt-10">
-                {/*process to produce
+                {/*process to produce*/}
                 <div className="container rounded-2xl border-2 border-blue-800 p-10 ml-3 bg-white justify-start w-[25%]">
                     <p className="text-lg text-black font-semibold">Process to produce</p>
 
                 </div>
-                */}
-
                 {/* Table */}
                 <div className="overflow-x-auto p-4">
                     <table className="border-collapse border border-gray-400 w-full">

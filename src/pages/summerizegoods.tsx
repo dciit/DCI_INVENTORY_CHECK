@@ -47,10 +47,10 @@ function SummerizeGoods() {
     return (
         <head className="flex flex-col px-8 py-8">
             <div className="flex flex-row justify-between items-center">
-                <span className="w-1/6 p-6 bg-blue-900 border-4 border-black text-2xl text-white font-semibold text-center">
+                <span className="w-1/6 p-6 border-2 border-black rounded-xl text-2xl text-white font-semibold text-center bg-[#005792]">
                     AUDITEE
                 </span>
-                <p className="text-3xl font-bold text-center underline">สรุปรายการ Part ของ Finshed Goods (Assembly Line)</p>
+                <p className="text-3xl font-bold text-center underline">สรุปรายการ Part ของ Finished Goods (Assembly Line)</p>
                 <div className="flex flex-col gap-3">
                     <span className="pt-3 px-12 border border-black bg-gray-400 text-2xl text-black font-bold text-center flex items-center justify-center gap-2">
                         <PrinterOutlined style={{ fontSize: '50px' }} />
@@ -64,7 +64,7 @@ function SummerizeGoods() {
             </div>
             <div className="flex flex-row w-full gap-3 mt-5">
                 <div className=" flex justify-start gap-2">
-                    <span className="p-3 border bg-green-500 text-lg text-white font-semibold text-start w-24">
+                    <span className="p-3 border bg-[#FFF2C2] text-lg text-black font-semibold text-start w-24 rounded-lg ">
                         Factory:
                     </span>
                     <Input className="p-3 border border-black text-lg text-black font-semibold text-start w-60"></Input>
@@ -72,14 +72,12 @@ function SummerizeGoods() {
             </div>
             <div className="flex flex-row w-full gap-3 mt-3">
                 <div className="flex justify-start gap-2">
-                    <span className="p-3 border bg-green-500 text-lg text-white font-semibold text-start w-24">
+                    <span className="p-3 border bg-[#FFF2C2] text-lg text-black font-semibold text-start w-24 rounded-lg">
                         W/C:
                     </span>
-                    <Input className="p-3 border border-black text-lg text-black font-semibold text-start w-60"></Input>
+                    <Input className="border border-black text-lg text-black font-semibold text-start w-60"></Input>
                     <div id="search" className="flex flex-1 justify-end">
-                        <Button className="text-black bg-blue-300 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
-                            Search
-                        </Button>
+                        <button type="button" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Blue</button>
                     </div>
                 </div>
             </div>
@@ -89,21 +87,21 @@ function SummerizeGoods() {
                         {/* Header */}
                         <thead>
                             <tr className="bg-gray-200">
-                                <th className="border border-gray-400 px-4 py-2 sticky left-0 bg-white z-10 w-[50px] text-center shadow-md" rowSpan={2}>NO</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-right shadow-md" rowSpan={2}>WC</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] text-center shadow-md" rowSpan={2}>Part No</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky left-[230px] bg-white z-10 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky left-[290px] bg-white z-10 w-[200px] text-center shadow-md" rowSpan={2}>PART NAME</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-0 bg-white z-[20] w-[50px] text-center shadow-md" rowSpan={2}>NO</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[50px]  bg-white z-20 w-[60px] text-right shadow-md" rowSpan={2}>WC</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[110px] bg-white z-20 w-[120px] text-center shadow-md" rowSpan={2}>Part No</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[230px] bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[290px] bg-white z-20 w-[200px] text-center shadow-md" rowSpan={2}>PART NAME</th>
 
-                                <th className="border border-gray-400 px-4 py-2 whitespace-nowrap w-[120px] text-right" colSpan={1}>Last Update</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky top-0 bg-gray-200  whitespace-nowrap w-[120px] text-right" colSpan={1}>Last Update</th>
                                 {tableData.map((row, rowindex) => (
-                                    <th key={rowindex} className="border border-gray-400 px-2 py-1 text-right w-[100px]">{row.date}</th>
+                                    <th key={rowindex} className="border border-gray-400 px-2 py-1 text-right w-[100px] sticky top-0 bg-gray-200 ">{row.date}</th>
                                 ))}
                             </tr>
                             <tr className="bg-gray-200">
-                                <th className="border border-gray-400 px-4 py-2 w-[100px] text-center">Total</th>
+                                <th className="border border-gray-400 px-4 py-2 sticky top-[42px] bg-gray-200 w-[100px] text-center">Total</th>
                                 {tableData.map((row, rowIndex) => (
-                                    <th key={rowIndex} className="border border-gray-400 text-center max-w-full text-sm">{row.model}</th>
+                                    <th key={rowIndex} className="border border-gray-400 text-center max-w-full text-sm sticky top-[42px] bg-gray-200">{row.model}</th>
                                 ))}
                             </tr>
                         </thead>

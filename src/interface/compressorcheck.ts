@@ -37,3 +37,7 @@ export interface PropPartUsed {
     procName: string;
     partNo: string[];
 }
+
+export interface Qtytotal {
+    qtytotal: number;
+}

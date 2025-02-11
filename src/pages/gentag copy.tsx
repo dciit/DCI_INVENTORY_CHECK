@@ -84,7 +84,7 @@ function GenTag() {
                                                     <div key={i} className="w-6 h-6 border border-gray-300"></div>
                                                 ))}
                                             </div>
-                                            <p className="text-black text-sm font-light">.</p>
+                                            <p className="text-black text-sm font-bold">.</p>
                                             <div className="flex border">
                                                 {[...Array(2)].map((_, i) => (
                                                     <div key={i} className="w-6 h-6 border border-gray-300"></div>
@@ -105,7 +105,7 @@ function GenTag() {
                                                     <div key={i} className="w-6 h-6 border border-gray-300"></div>
                                                 ))}
                                             </div>
-                                            <p className="text-black text-sm font-light">.</p>
+                                            <p className="text-black text-sm font-bold">.</p>
                                             <div className="flex border">
                                                 {[...Array(2)].map((_, i) => (
                                                     <div key={i} className="w-6 h-6 border border-gray-300"></div>
@@ -125,7 +125,7 @@ function GenTag() {
                                                     <div key={i} className="w-6 h-6 border border-gray-300"></div>
                                                 ))}
                                             </div>
-                                            <p className="text-black text-sm font-light">.</p>
+                                            <p className="text-black text-sm font-bold">.</p>
                                             <div className="flex border">
                                                 {[...Array(2)].map((_, i) => (
                                                     <div key={i} className="w-6 h-6 border border-gray-300"></div>

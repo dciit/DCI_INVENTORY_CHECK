@@ -1,4 +1,4 @@
-import { Master, MasterData, MasterInterface, Partlist, PropPartUsed } from "@/interface/compressorcheck";
+import { Master, MasterData, MasterInterface, Partlist, PropPartUsed, Qtytotal } from "@/interface/compressorcheck";
 import { API_MASTER_CHECK_INVENTORY } from "@/service/master.service";
 import { API_PARTLIST_CHECK_INVENTORY } from "@/service/partlist.service";
 import { Alert, Button, Input, InputRef } from "antd"
@@ -18,9 +18,14 @@ function AuditeeFill() {
         paramModel: ''
     });
 
+    const [qtyTotal, setQtyTotal] = useState<Qtytotal>({
+        qtytotal: 0
+    });
+
     const [tableData, setTableData] = useState<Master[]>([]);
     const [codeModel, setCodeModel] = useState<string>("");
     const [partlistData, setPartlistData] = useState<PropPartUsed[]>([]);
+
 
     const refWCNO = useRef<InputRef>(null);
     const refModel = useRef<InputRef>(null);
@@ -37,6 +42,11 @@ function AuditeeFill() {
                 setSearch({ ...serach, load: false, message: 'กรุณากรอก model name' });
                 return;
             }
+        }
+
+        if (searchData.paramWCNO || searchData.paramModel) {
+            setSearchData({ paramWCNO: "", paramModel: "" })
+            console.log(searchData)
         }
 
         let resSearch = await API_MASTER_CHECK_INVENTORY(searchData.paramWCNO, searchData.paramModel);
@@ -80,26 +90,28 @@ function AuditeeFill() {
         });
     }, []);
 
-    // useEffect(() => {
-    //     const updatePartlist = partlistData.map((partItem: any) => {
-    //         const updatedPart = { ...partItem};
-
-    //         tableData.forEach((tableRow, index) => {
-    //             if (tableRow.partNo.includes(partItem.partNo)) {
-    //                 updatedPart.usageQty = headerValues[index] * tableRow.usageQty
-    //             }
-    //         });
-
-    //         return updatedPart;
-    //     })
-
-    //     setPartlistData(updatePartlist);
-    // })
+    const handleClear = async () => {
+        if (headerValues || partlistData) {
+            setPartlistData([]);
+            setHeaderValues([]);
+        }
+    }
 
     useEffect(() => {
+        const updatedPartlistData = partlistData.map((part: any) => {
+            const matchingTableData = tableData.find((data) => data.partNo === part.partNo);
+            if (matchingTableData) {
+                return { ...part, qty: matchingTableData.usageQty * headerValues[tableData.indexOf(matchingTableData)] };
+            }
+
+            return part;
+        });
+
+
         console.log("ข้อมูลใน tableData อัปเดต:", tableData);
-        console.log("ข้อมูลใน partlistData อัปเดต:", partlistData)
-    }, [headerValues, tableData, partlistData]);
+        console.log("ข้อมูลใน partlistData อัปเดต:", partlistData);
+        console.log('ข้อมูลใน qtyTotal อัปเดต:', qtyTotal)
+    }, [headerValues, tableData, partlistData, qtyTotal]);
 
 
 
@@ -131,6 +143,7 @@ function AuditeeFill() {
                                 type="text"
                                 id="wc"
                                 className="p-2.5 border border-black hover:border-black"
+                                value={searchData.paramWCNO}
                                 autoFocus onChange={(e) => setSearchData({ ...searchData, paramWCNO: e.target.value })}
                             />
                         </div>
@@ -141,6 +154,7 @@ function AuditeeFill() {
                                 type="text"
                                 id="model"
                                 className="w-56 p-2.5 border border-black hover:border-black"
+                                value={searchData.paramModel}
                                 autoFocus onChange={(e) => setSearchData({ ...searchData, paramModel: e.target.value })}
                             />
                         </div>
@@ -154,16 +168,17 @@ function AuditeeFill() {
                                 onChange={(e) => setCodeModel(e.target.value)}
                             />
                         </div>
+                        <div id="search" className="flex flex-1 justify-end mt-7">
+                            <Button
+                                onClick={handleSearchData}
+                                htmlType="submit"
+                                className="text-black bg-blue-300 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
+                                Search
+                            </Button>
+                        </div>
                     </div>
 
-                    <div id="search" className="flex flex-1 justify-end mt-7">
-                        <Button
-                            onClick={handleSearchData}
-                            htmlType="submit"
-                            className="text-black bg-blue-300 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
-                            Search
-                        </Button>
-                    </div>
+
                 </div>
                 <Alert message="กรอกข้อมูลให้ครบก่อนทำการค้นหา" type="warning" className="w-[20%] mt-2" showIcon />
             </div>
@@ -214,7 +229,8 @@ function AuditeeFill() {
                                         <td className="border px-4 py-4 w-1/2">{row.partNo}</td>
                                         <td className="border px-4 py-4 w-60">{row.proc_Name}</td>
                                     </div>
-                                    <td className="border border-gray-400 px-4 py-2 text-center">0</td>
+
+                                    <td className="border border-gray-400 px-4 py-2 text-center">{qtyTotal.qtytotal}</td>
 
                                     {/* เปรียบเทียบ procName กับ partlistData */}
                                     {partlistData.map((partItem, partIndex) => {
@@ -238,14 +254,16 @@ function AuditeeFill() {
                 </div>
 
                 <div className="flex flex-row gap-3 justify-end">
-                    <div id="adjust" className="mt-7">
+                    {/* <div id="adjust" className="mt-7">
                         <Button
                             className="text-black bg-yellow-200 hover:bg-yellow-700 focus:ring-4 focus:outline-none focus:ring-yellow-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-yellow-900 dark:hover:bg-yellow-900 dark:focus:ring-yellow-900">
                             Adjust
                         </Button>
-                    </div>
+                    </div> */}
                     <div id="clear" className="mt-7">
                         <Button
+                            onClick={handleClear}
+                            htmlType="submit"
                             className="text-black bg-rose-500 hover:bg-rose-700 focus:ring-4 focus:outline-none focus:ring-rose-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-rose-900 dark:hover:bg-rose-900 dark:focus:ring-rose-900">
                             Clear
                         </Button>
