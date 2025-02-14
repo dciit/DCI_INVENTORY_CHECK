@@ -59,7 +59,7 @@ function AuditorFill() {
         }
 
         let groupByPartlist: PropPartUsed[] = [];
-        let resPartlist = await API_PARTLIST_CHECK_INVENTORY();
+        let resPartlist = await API_PARTLIST_CHECK_INVENTORY(searchData.paramWCNO, searchData.paramModel);
         // console.log('Data PartList:', resPartlist)
         const arPartList: PartListQtyInfo[] = [];
         resPartlist.map((oItem: BOMInfo) => {
@@ -114,6 +114,7 @@ function AuditorFill() {
     const handleClear = async () => {
         if (headerValues) {
             setHeaderValues([]);
+            setPartList(prev => prev.map(item => ({...item, calQty: 0})));
         }
     }
 

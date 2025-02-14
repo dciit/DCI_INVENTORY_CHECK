@@ -1,8 +1,7 @@
 import { PrinterOutlined, SearchOutlined } from "@ant-design/icons"
-import imgReact from "../assets/excelpic.png"
 import { Button, Input } from "antd"
 import { useState } from "react";
-
+import imgprinter from "../assets/printer.jpg";
 interface RowData {
     no: number;
     wc: string;
@@ -92,7 +91,12 @@ function SummerizeGoods() {
                     </div>
                 </div>
             </div>
-            <body className="mt-8">
+            <div className="flex flex-row w-full mt-4 justify-end">
+                <a href="">
+                    <img src={imgprinter} alt=""  className="w-24 h-16"/>
+                </a>
+            </div>
+            <body className="mt-2">
                 <div className="overflow-x-auto max-h-[500px]">
                     <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
                         {/* Header */}

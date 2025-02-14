@@ -7,9 +7,9 @@ const http = axios.create({
     }
 });
 
-export function API_PARTLIST_CHECK_INVENTORY() {
+export function API_PARTLIST_CHECK_INVENTORY(paramWCNO: string, paramModel: string) {
     return new Promise<any>(resolve => {
-        http.get(`/bom_partlist`).then((res) => {
+        http.post(`/bom_partlist`, {paramWCNO : paramWCNO, paramModel : paramModel}).then((res) => {
             resolve(res.data);
         }).catch((e) => {
             console.log('asd')
