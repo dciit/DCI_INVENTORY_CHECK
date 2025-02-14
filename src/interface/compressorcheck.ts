@@ -1,9 +1,9 @@
-export interface MasterData { 
-    paramWCNO : string;
+export interface MasterData {
+    paramWCNO: string;
     paramModel: string;
 }
 
-export interface MasterInterface { 
+export interface MasterInterface {
     serach: boolean;
     load: boolean;
     message: string;
@@ -18,7 +18,6 @@ export interface Master {
     cm: string;
     usageQty: number;
     orderNo: number;
-    totalQty: "0";
 }
 
 export interface Partlist {
@@ -29,15 +28,34 @@ export interface Partlist {
     partNo: string;
     cm: string;
     usageQty: number;
-    orderNo: number; 
-    totalQty: 0;
+    orderNo: number;
 }
 
 export interface PropPartUsed {
+    procCode: string;
     procName: string;
     partNo: string[];
+    cm: string[];
 }
 
-export interface Qtytotal {
-    qtytotal: number;
+export interface PartListQtyInfo {
+    wcno: string;
+    model: string;
+    proc_Code: string;
+    partNo: string;
+    cm: string;
+    usageQty: number;
+    calQty: number;
+}
+
+export interface BOMInfo{
+    wcno: string;
+    model : string;
+    proc_Code : string;
+    proc_Name : string;
+    partNo : string;
+    cm : string;
+    partName : string;
+    usageQty : number;
+    orderNo : number;
 }

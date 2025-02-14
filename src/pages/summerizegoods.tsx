@@ -1,4 +1,4 @@
-import { PrinterOutlined } from "@ant-design/icons"
+import { PrinterOutlined, SearchOutlined } from "@ant-design/icons"
 import imgReact from "../assets/excelpic.png"
 import { Button, Input } from "antd"
 import { useState } from "react";
@@ -46,13 +46,16 @@ function SummerizeGoods() {
 
     return (
         <head className="flex flex-col px-8 py-8">
-            <div className="flex flex-row justify-between items-center">
-                <span className="w-1/6 p-6 border-2 border-black rounded-xl text-2xl text-white font-semibold text-center bg-[#005792]">
+            <div className="flex flex-row justify-center items-center">
+                {/* <span className="w-1/6 p-6 bg-blue-900 border-4 border-black text-2xl text-white font-semibold text-center">
                     AUDITEE
-                </span>
-
-                <p className="text-3xl font-bold text-center underline">สรุปรายการ Part ของ Finished Goods (Assembly Line)</p>
-                <div className="flex flex-col gap-3">
+                </span> */}
+                <p className="text-3xl p-6 w-full border border-black rounded-lg bg-[#FFEFC8] font-bold text-center">
+                    สรุปรายการ Part ของ Finshed Goods (Assembly Line)
+                    <hr className="mx-96 mt-3 border-black" />
+                    <p className=" mt-2 text-2xl font-normal">(Auditee)</p>
+                </p>
+                {/* <div className="flex flex-col gap-3">
                     <span className="pt-3 px-12 border border-black bg-gray-400 text-2xl text-black font-bold text-center flex items-center justify-center gap-2">
                         <PrinterOutlined style={{ fontSize: '50px' }} />
                         Print
@@ -61,24 +64,31 @@ function SummerizeGoods() {
                         <img src={imgReact} alt="" className="w-12 h-12" />
                         Excel
                     </span>
-                </div>
+                </div> */}
             </div>
             <div className="flex flex-row w-full gap-3 mt-5">
                 <div className=" flex justify-start gap-2">
-                    <span className="p-3 border bg-[#FFF2C2] text-lg text-black font-semibold text-start w-24 rounded-lg ">
-                        Factory:
+                    <span className="p-2 border border-black bg-[#607EAA] text-lg text-white font-semibold text-start w-24 rounded-lg ">
+                        Factory
                     </span>
-                    <Input className="p-3 border border-black text-lg text-black font-semibold text-start w-60"></Input>
+                    <Input className="border border-black text-lg text-black font-semibold text-start w-60"></Input>
                 </div>
             </div>
             <div className="flex flex-row w-full gap-3 mt-3">
                 <div className="flex justify-start gap-2">
-                    <span className="p-3 border bg-[#FFF2C2] text-lg text-black font-semibold text-start w-24 rounded-lg">
-                        W/C:
+                    <span className="p-2 border border-black bg-[#607EAA] text-lg text-white font-semibold text-start w-24 rounded-lg">
+                        W/C
                     </span>
                     <Input className="border border-black text-lg text-black font-semibold text-start w-60"></Input>
                     <div id="search" className="flex flex-1 justify-end">
-                    <button type="button" className="focus:outline-none text-white bg-[#FFEEBB] hover:bg-[#0057920 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Search</button>
+                        <Button
+                            // onClick={handleSearchData}
+                            htmlType="submit"
+                            className="text-black focus:ring-4 focus:outline-none font-medium rounded-lg text-lg py-5 flex items-center gap-2"
+                        >
+                            <SearchOutlined className="text-xl" />
+                            Search
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -87,22 +97,22 @@ function SummerizeGoods() {
                     <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
                         {/* Header */}
                         <thead>
-                            <tr className="bg-gray-200">
-                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-0 bg-white z-[20] w-[50px] text-center shadow-md" rowSpan={2}>NO</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[50px]  bg-white z-20 w-[60px] text-right shadow-md" rowSpan={2}>WC</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[110px] bg-white z-20 w-[120px] text-center shadow-md" rowSpan={2}>Part No</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[230px] bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
-                                <th className="border border-gray-400 px-4 py-2 sticky top-0 left-[290px] bg-white z-20 w-[200px] text-center shadow-md" rowSpan={2}>PART NAME</th>
+                            <tr>
+                                <th className="border border-gray-600 px-4 py-2 sticky top-0 left-0 bg-white z-[20] w-[50px] text-center shadow-md" rowSpan={2}>NO</th>
+                                <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[50px]  bg-white z-20 w-[60px] text-right shadow-md" rowSpan={2}>WC</th>
+                                <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[110px] bg-white z-20 w-[120px] text-center shadow-md" rowSpan={2}>Part No</th>
+                                <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[230px] bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
+                                <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[290px] bg-white z-20 w-[200px] text-center shadow-md" rowSpan={2}>PART NAME</th>
 
-                                <th className="border border-gray-400 px-4 py-2 sticky top-0 bg-gray-200  whitespace-nowrap w-[120px] text-right" colSpan={1}>Last Update</th>
+                                <th className="border border-gray-600 px-4 py-2 sticky top-0 bg-[#D7E5CA]  whitespace-nowrap w-[120px] text-right" colSpan={1}>Last Update</th>
                                 {tableData.map((row, rowindex) => (
-                                    <th key={rowindex} className="border border-gray-400 px-2 py-1 text-right w-[100px] sticky top-0 bg-gray-200 ">{row.date}</th>
+                                    <th key={rowindex} className="border border-gray-400 px-2 py-1 text-right w-[100px] sticky top-0 bg-[#D7E5CA] ">{row.date}</th>
                                 ))}
                             </tr>
                             <tr className="bg-gray-200">
-                                <th className="border border-gray-400 px-4 py-2 sticky top-[42px] bg-gray-200 w-[100px] text-center">Total</th>
+                                <th className="border border-gray-600 px-4 py-2 sticky top-[42px] bg-[#D1E9F6] w-[100px] text-center">Total</th>
                                 {tableData.map((row, rowIndex) => (
-                                    <th key={rowIndex} className="border border-gray-400 text-center max-w-full text-sm sticky top-[42px] bg-gray-200">{row.model}</th>
+                                    <th key={rowIndex} className="border border-gray-600 text-center max-w-full text-sm sticky top-[42px] bg-[#D1E9F6]">{row.model}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -111,15 +121,15 @@ function SummerizeGoods() {
                         <tbody>
                             {tableData.map((row, rowIndex) => (
                                 <tr key={rowIndex} className="hover:bg-gray-100">
-                                    <td className="border border-gray-400 px-4 py-2 sticky left-0 bg-white z-10 w-[50px] text-center  shadow-md">{row.no}</td>
-                                    <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-right shadow-md">{row.wc}</td>
-                                    <td className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] whitespace-nowrap text-right shadow-md">{row.partno}</td>
-                                    <td className="border border-gray-400 px-4 py-2 sticky left-[230px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
-                                    <td className="border border-gray-400 px-4 py-2 sticky left-[290px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partname}</td>
+                                    <td className="border border-gray-600 px-4 py-2 sticky left-0 bg-white z-10 w-[50px] text-center  shadow-md">{row.no}</td>
+                                    <td className="border border-gray-600 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-right shadow-md">{row.wc}</td>
+                                    <td className="border border-gray-600 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] whitespace-nowrap text-right shadow-md">{row.partno}</td>
+                                    <td className="border border-gray-600 px-4 py-2 sticky left-[230px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
+                                    <td className="border border-gray-600 px-4 py-2 sticky left-[290px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partname}</td>
 
-                                    <td className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">{row.qtytotle}</td>
+                                    <td className="border border-gray-600 px-4 py-2 text-center whitespace-nowrap">{row.qtytotle}</td>
                                     {row.values.map((value, i) => (
-                                        <td key={i} className="border border-gray-400 px-2 py-1 text-center whitespace-nowrap ">{value}</td>
+                                        <td key={i} className="border border-gray-600 px-2 py-1 text-center whitespace-nowrap ">{value}</td>
                                     ))}
                                 </tr>
                             ))}
