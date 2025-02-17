@@ -20,16 +20,16 @@ export interface Master {
     orderNo: number;
 }
 
-export interface Partlist {
-    wcno: string;
-    model: string;
-    proc_Code: string;
-    proc_Name: string;
-    partNo: string;
-    cm: string;
-    usageQty: number;
-    orderNo: number;
-}
+// export interface Partlist {
+//     wcno: string;
+//     model: string;
+//     proc_Code: string;
+//     proc_Name: string;
+//     partNo: string;
+//     cm: string;
+//     usageQty: number;
+//     orderNo: number;
+// }
 
 export interface PropPartUsed {
     procCode: string;
@@ -39,6 +39,7 @@ export interface PropPartUsed {
 }
 
 export interface PartListQtyInfo {
+    ivSetCode?: string;
     wcno: string;
     model: string;
     proc_Code: string;
@@ -46,6 +47,7 @@ export interface PartListQtyInfo {
     cm: string;
     usageQty: number;
     calQty: number;
+    crBy?: string;
 }
 
 export interface BOMInfo{

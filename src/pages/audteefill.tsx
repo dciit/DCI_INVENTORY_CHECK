@@ -6,6 +6,7 @@ import { Alert, Button, Input, InputRef } from "antd"
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import "../index.css";
 import "../assets/fonts/Nunito/Nunito-Regular.ttf"
+import { API_SAVE_INFO_INVENTORY, API_SETTAG_CODE } from "@/service/invsave.service";
 
 function AuditeeFill() {
 
@@ -26,13 +27,12 @@ function AuditeeFill() {
     const [ProcessParts, setProcessPartsData] = useState<PropPartUsed[]>([]);
 
     const [oPartList, setPartList] = useState<PartListQtyInfo[]>([]);
-    //const [isInitial, setIsInitial] = useState<boolean>(false);
 
 
-    const refWCNO = useRef<InputRef>(null)
+    const refWCNO = useRef<HTMLSelectElement>(null)
     const refModel = useRef<InputRef>(null);
 
-    // const wcnoOptions = ["901", "902", "903"]
+    const wcnoOptions = ["901", "902", "903"]
 
 
 
@@ -50,9 +50,9 @@ function AuditeeFill() {
             }
         }
 
-        if (searchData.paramWCNO || searchData.paramModel) {
-            setSearchData({ paramWCNO: "", paramModel: "" });
-        }
+        // if (searchData.paramWCNO || searchData.paramModel) {
+        //     setSearchData({ paramWCNO: "", paramModel: "" });
+        // }
 
         // Clear data
         //setPartList([]);
@@ -69,10 +69,13 @@ function AuditeeFill() {
         // console.log('Data PartList:', resPartlist)
         const arPartList: PartListQtyInfo[] = [];
         resPartlist.map((oItem: BOMInfo) => {
-            const data = { wcno: oItem.wcno, model: oItem.model, proc_Code: oItem.proc_Code, partNo: oItem.partNo, cm: oItem.cm, usageQty: oItem.usageQty, calQty: 0 };
+            const data: PartListQtyInfo = {
+                wcno: oItem.wcno, model: oItem.model, proc_Code: oItem.proc_Code, partNo: oItem.partNo, cm: oItem.cm, usageQty: oItem.usageQty, calQty: 0,
+                ivSetCode: "",
+                crBy: ""
+            };
             arPartList.push(data);
 
-            // setPartList([ ...oPartList, ...[{ wcno: oItem.wcno, model: oItem.model, proc_Code: oItem.proc_Code, partNo: oItem.partNo, cm: oItem.cm, usageQty: oItem.usageQty, calQty: 0 }] ]);
 
             let indexOfProcName: number = groupByPartlist.findIndex((x: any) => x.procName == oItem.proc_Name)
             if (indexOfProcName != -1) {
@@ -116,28 +119,38 @@ function AuditeeFill() {
 
         })
         setPartList(ClonePartList)
+        console.log("Data antire partlist:", oPartList)
     }
 
     const handleClear = async () => {
         if (headerValues) {
             setHeaderValues([]);
-            setPartList(prev => prev.map(item => ({...item, calQty: 0})));
-            
+            setPartList(prev => prev.map(item => ({ ...item, calQty: 0 })));
+
         }
     }
 
 
-    // const handleSubmit = async () => {
-    //     const data = oPartList;
+    const handleSubmit = async () => {
 
-    //     try {
-    //         const response = await
-    //     }
+        let gensetcode = await API_SETTAG_CODE(searchData.paramWCNO, "41401")
+        console.log(gensetcode)
 
-    //     catch{
+        if (!gensetcode) {
+            console.log("Data Not Found")
+        }
 
-    //     }
-    // } 
+        const clonedArray = oPartList.map(item => ({ ...item }));
+        clonedArray.map((item, i) => {
+            item.ivSetCode = gensetcode.setCode
+            item.crBy = gensetcode.crBy
+        })
+        console.log(clonedArray);
+
+        let submitinfo = await API_SAVE_INFO_INVENTORY(clonedArray)
+
+        console.log(submitinfo)
+    } 
 
     useEffect(() => {
     }, [headerValues, tableData, ProcessParts, oPartList]);
@@ -159,12 +172,14 @@ function AuditeeFill() {
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-row gap-4">
                             <span className="p-2 w-1/2 bg-[#F9F5EB] border border-black rounded-xl text-lg text-black font-semibold text-center">YYYYMM</span>
-                            <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Vision:</span>
+                            <div className="p-2 w-1/2 border border-black rounded-lg text-lg text-black font-semibold text-center">123123</div>
+                        </div>
+                        <div className="flex flex-row gap-4">
+                            <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Vision</span>
                             <div className="p-2 border border-black rounded-lg text-lg text-black font-semibold w-40"></div>
                         </div>
                         <div className="flex flex-row gap-4">
-                            <div className="p-2 w-1/2 border border-black rounded-lg text-lg text-black font-semibold text-center">123123</div>
-                            <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Name:</span>
+                            <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Name</span>
                             <div className="p-2 border border-black rounded-lg text-lg text-black font-semibold w-40"></div>
                         </div>
                     </div>
@@ -174,14 +189,18 @@ function AuditeeFill() {
                     <div className="flex justify-between gap-2">
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3  bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
-                            <Input
+                            <select
                                 ref={refWCNO}
-                                type="text"
                                 id="wc"
-                                className="p-2.5 border border-black hover:border-black"
+                                className="p-2.5 border border-black rounded-lg hover:border-black"
                                 value={searchData.paramWCNO}
-                                autoFocus onChange={(e) => setSearchData({ ...searchData, paramWCNO: e.target.value })}
-                            />
+                                onChange={(e) => setSearchData({ ...searchData, paramWCNO: e.target.value })}
+                            >
+                                <option value="" disabled>เลือก WC</option>
+                                {wcnoOptions.map((wc) => (
+                                    <option key={wc} value={wc}>{wc}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Model Name</span>
@@ -228,24 +247,24 @@ function AuditeeFill() {
                 </div>*/}
                 {/* Table */}
                 <div className="overflow-x-auto p-4">
-                    <table className="border-collapse border border-gray-400 w-full">
+                    <table className="border-collapse border border-gray-600 w-full">
                         {/* Header */}
                         <thead>
                             <tr className="bg-[#F9F5EB]">
-                                <th className="border border-gray-400 px-4 py-2" rowSpan={2}>จำนวน Part ประกอบ</th>
-                                <th className="border border-gray-400 px-4 py-2" rowSpan={2}>Process</th>
-                                <th className="border border-gray-400 px-4 py-2" colSpan={1}>Qty Total</th>
+                                <th className="border border-gray-600 px-4 py-2" rowSpan={2}>จำนวน Part ประกอบ</th>
+                                <th className="border border-gray-600 px-4 py-2" rowSpan={2}>Process</th>
+                                <th className="border border-gray-600 px-4 py-2" colSpan={1}>Qty Total</th>
                                 {Array.from({ length: ProcessParts.length }, (_, i) => (
-                                    <th key={i} className="border border-gray-400 px-2 py-1 text-center">
+                                    <th key={i} className="border border-gray-600 px-2 py-1 text-center">
                                         {i + 1}
                                     </th>
                                 ))}
                             </tr>
                             <tr className="bg-[#F9F5EB]">
-                                <th className="border border-gray-400 px-4 py-2">{headerSum}</th>
+                                <th className="border border-gray-600 px-4 py-2">{headerSum}</th>
                                 {
                                     ProcessParts.map((oItem: PropPartUsed, idx: number) => {
-                                        return (<th key={idx} className="border border-gray-400 px-2 py-2 text-center">
+                                        return (<th key={idx} className="border border-gray-600 px-2 py-2 text-center">
                                             <Input
                                                 type="text"
                                                 className="bg-[#EAE3D2]"
@@ -267,12 +286,12 @@ function AuditeeFill() {
                         <tbody>
                             {tableData.map((row, rowIndex) => (
                                 <tr key={rowIndex} className="hover:bg-gray-100">
-                                    <td className="border border-gray-400 px-4 py-2 text-center">{row.usageQty}</td>
+                                    <td className="border border-gray-600 px-4 py-2 text-center">{row.usageQty}</td>
                                     <div className="flex flex-row">
-                                        <td className="border px-4 py-4 w-1/2">{row.partNo}</td>
-                                        <td className="border px-4 py-4 w-60">{row.proc_Name}</td>
+                                        <td className="border border-gray-300 px-4 py-4 w-1/2">{row.partNo}</td>
+                                        <td className="border border-gray-300 px-4 py-4 w-60">{row.proc_Name}</td>
                                     </div>
-                                    <td className="border border-gray-400 px-4 py-2 text-center">
+                                    <td className="border border-gray-600 px-4 py-2 text-center">
                                         {
                                             ProcessParts.reduce((total, oItem) => {
                                                 const oDatas = Array.isArray(oPartList)
@@ -296,7 +315,7 @@ function AuditeeFill() {
                                                 && c.model === row.model && c.proc_Code === oItem.procCode
                                                 && c.partNo === row.partNo && c.cm === row.cm) : [];
                                             return (
-                                                <td key={idx} className="border border-gray-400 text-center">
+                                                <td key={idx} className="border border-gray-600 text-center">
                                                     <div
                                                         className={`w-full h-full text-center mt-1 ${oDatas.length > 0 ? "bg-green-500" : "bg-white"}`}
                                                     />
@@ -312,7 +331,7 @@ function AuditeeFill() {
                     </table>
                 </div>
 
-                <div className="flex flex-row gap-3 justify-end">
+                <div className="flex flex-row gap-3 justify-center">
                     {/* <div id="adjust" className="mt-7">
                         <Button
                             className="text-black bg-yellow-200 hover:bg-yellow-700 focus:ring-4 focus:outline-none focus:ring-yellow-700 font-medium rounded-lg text-lg px-7 py-7 text-center dark:bg-yellow-900 dark:hover:bg-yellow-900 dark:focus:ring-yellow-900">
@@ -323,13 +342,14 @@ function AuditeeFill() {
                         <button
                             onClick={handleClear}
                             type="submit"
-                            className="text-white bg-[#B8001F] hover:bg-[#B8001F]  focus:outline-none focus:ring-rose-700 font-medium rounded-lg text-lg px-3 py-2 text-center  dark:bg-rose-900 dark:hover:bg-rose-900 dark:focus:ring-rose-900">
+                            className="text-white bg-[#B8001F] hover:bg-[#B8001F]  focus:outline-none focus:ring-rose-700 font-medium rounded-lg text-lg px-5 py-2 text-center  dark:bg-rose-900 dark:hover:bg-rose-900 dark:focus:ring-rose-900">
                             Clear
                         </button>
                     </div>
                     <div id="save" className="mt-7">
                         <button
-                            className="text-white bg-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-lg px-3 py-2 text-center dark:bg-green-900 dark:hover:bg-green-900 dark:focus:ring-green-900">
+                            onClick={handleSubmit}
+                            className="text-white bg-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-lg px-5 py-2 text-center dark:bg-green-900 dark:hover:bg-green-900 dark:focus:ring-green-900">
                             Save
                         </button>
                     </div>

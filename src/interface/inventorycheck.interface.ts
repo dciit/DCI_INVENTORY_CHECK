@@ -1,4 +1,4 @@
-export interface Inventorycheck{
+export interface InventoryInfo{
     year: string;
     wcno: string;
     drawingno: string;
@@ -9,4 +9,14 @@ export interface Inventorycheck{
 
 export interface  Valueinvcheck{
     qty: string;
+}
+
+export interface DataInvCheck {
+    year: string;
+    wcno: string;
+    drawingno: string;
+    partname: string;
+    cm: string;
+    qty: string;
+    unit: string;
 }

@@ -26,8 +26,10 @@ function Login() {
     user: '',
     pass: ''
   });
+
   const refUser = useRef<InputRef>(null);
   const refPass = useRef<InputRef>(null);
+  
   async function handleLogin() {
     if (loginData.user == '' || loginData.pass == '') {
       if (loginData.user == '') {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import imgprinter from "../assets/printer.jpg";
 
 interface DataTag {
     wc: string;
@@ -28,130 +29,135 @@ function GenTag() {
 
     console.log(initialData);
     const [Data, setTableData] = useState<DataTag[]>(initialData);
-    
+
 
     // const valuesLength = tableData.length > 0 ? tableData[0].wc.
 
     return (
-        <div className="w-[210mm] h-[297mm] border mx-auto">
-            {[...Array(Math.ceil(Data.length / 4))].map((_, pageIndex) => (
-                <div key={pageIndex} className="page h-full break-after-page">
-                    <div className="grid grid-rows-4 border h-full">
-                        {/* Loop for 4 items per page */}
-                        {Data.slice(pageIndex * 4, (pageIndex + 1) * 4).map((item, rowIndex) => (
-                            <div key={rowIndex} className="bg-white flex items-center justify-center border border-gray-300">
-                                <div className="flex flex-col border gap-0 h-full w-full">
-                                    <div className="flex flex-row justify-end gap-0">
-                                        <div className="flex gap-2">
-                                            <p className="text-black text-sm font-light">DCI</p>
-                                            <p className="text-black text-sm font-light">PHYSICAL</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Displaying data for each row */}
-                                    <div>
-                                        <p className="text-black text-start font-bold">WC : {item.wc} TAG : {String(pageIndex * 4 + rowIndex + 1).padStart(5, '0')}</p>
-                                        <div className="flex flex-row justify-between gap-0">
+        <div>
+            <a href="#" onClick={() => window.print()}>
+                <img src={imgprinter} alt="Print" className="w-24 h-16 print:hidden" />
+            </a>
+            <div className="w-[210mm] h-[297mm] border mx-auto">
+                {[...Array(Math.ceil(Data.length / 4))].map((_, pageIndex) => (
+                    <div key={pageIndex} className="page h-full break-after-page">
+                        <div className="grid grid-rows-4 border h-full">
+                            {/* Loop for 4 items per page */}
+                            {Data.slice(pageIndex * 4, (pageIndex + 1) * 4).map((item, rowIndex) => (
+                                <div key={rowIndex} className="bg-white flex items-center justify-center border border-gray-300">
+                                    <div className="flex flex-col border gap-0 h-full w-full">
+                                        <div className="flex flex-row justify-end gap-0">
                                             <div className="flex gap-2">
-                                                <p className="text-black text-sm font-light">DRAWING N0.</p>
-                                                <div className="flex flex-1 justify-end gap-3">
-                                                    <p className="text-black text-sm font-light">CM</p>
-                                                    <p className="text-black text-sm font-light">LOCATION:</p>
+                                                <p className="text-black text-sm font-light">DCI</p>
+                                                <p className="text-black text-sm font-light">PHYSICAL</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Displaying data for each row */}
+                                        <div>
+                                            <p className="text-black text-start font-bold">WC : {item.wc} TAG : {String(pageIndex * 4 + rowIndex + 1).padStart(5, '0')}</p>
+                                            <div className="flex flex-row justify-between gap-0">
+                                                <div className="flex gap-2">
+                                                    <p className="text-black text-sm font-light">DRAWING N0.</p>
+                                                    <div className="flex flex-1 justify-end gap-3">
+                                                        <p className="text-black text-sm font-light">CM</p>
+                                                        <p className="text-black text-sm font-light">LOCATION:</p>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <p className="text-black text-start font-bold">{item.model}</p>
+                                            <p className="text-black text-sm font-light">DES : {item.des}</p>
+                                            <p className="text-black text-sm font-light">UNIT : {item.unit}</p>
                                         </div>
-                                        <p className="text-black text-start font-bold">{item.model}</p>
-                                        <p className="text-black text-sm font-light">DES : {item.des}</p>
-                                        <p className="text-black text-sm font-light">UNIT : {item.unit}</p>
-                                    </div>
 
-                                    <div className="flex flex-col items-center mt-6">
-                                        <p className="text-black text-sm font-light mt-4">............................................</p>
-                                        <p className="text-black text-sm font-light mt-2">ผู้ตรวจสอบ DWG/ </p>
-                                        <p className="text-black text-sm font-light mt-2">CM ใน TAG ให้ตรง</p>
-                                        <p className="text-black text-sm font-light mt-1">กับ PART (FM,LD) </p>
-                                    </div>
-                                </div>
-                                <div className='flex flex-col border gap-0 h-full w-full'>
-                                    <div className='flex flex-row justify-staer ml-2'>
-                                        <div className='flex flex-1 justify-between gap-1'>
-                                            <p className='text-black text-sm font-light'>INVENTORY</p>
-                                            <p className='text-black text-sm font-light'>TAG</p>
-                                            <p className='textt-black text-sm font-light'>NO.</p>
+                                        <div className="flex flex-col items-center mt-6">
+                                            <p className="text-black text-sm font-light mt-4">............................................</p>
+                                            <p className="text-black text-sm font-light mt-2">ผู้ตรวจสอบ DWG/ </p>
+                                            <p className="text-black text-sm font-light mt-2">CM ใน TAG ให้ตรง</p>
+                                            <p className="text-black text-sm font-light mt-1">กับ PART (FM,LD) </p>
                                         </div>
                                     </div>
-                                    <p className='text-black text-sm font-light mt-6'>{item.location}</p>
-                                    <div className='flex flex-col items-center mt-24'>
-                                        <div className="flex flex-row items-center">
-                                            <div className="flex border">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                ))}
-                                            </div>
-                                            <p className="text-black text-sm font-bold">.</p>
-                                            <div className="flex border">
-                                                {[...Array(2)].map((_, i) => (
-                                                    <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                ))}
+                                    <div className='flex flex-col border gap-0 h-full w-full'>
+                                        <div className='flex flex-row justify-staer ml-2'>
+                                            <div className='flex flex-1 justify-between gap-1'>
+                                                <p className='text-black text-sm font-light'>INVENTORY</p>
+                                                <p className='text-black text-sm font-light'>TAG</p>
+                                                <p className='textt-black text-sm font-light'>NO.</p>
                                             </div>
                                         </div>
-                                        <p className='text-black text-sm font-light mt-2'>จำนวนครั้งที่นับได้ครั้งที่1</p>
-                                        <p className='text-black text-sm font-light mt-3'>...............................</p>
-                                        <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่1</p>
-                                    </div>
+                                        <p className='text-black text-sm font-light mt-6'>{item.location}</p>
+                                        <div className='flex flex-col items-center mt-24'>
+                                            <div className="flex flex-row items-center">
+                                                <div className="flex border">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                    ))}
+                                                </div>
+                                                <p className="text-black text-sm font-bold">.</p>
+                                                <div className="flex border">
+                                                    {[...Array(2)].map((_, i) => (
+                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className='text-black text-sm font-light mt-2'>จำนวนครั้งที่นับได้ครั้งที่1</p>
+                                            <p className='text-black text-sm font-light mt-3'>...............................</p>
+                                            <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่1</p>
+                                        </div>
 
-                                </div>
-                                <div className='flex flex-col border gap-0 h-full w-full'>
-                                       <div className="flex flex-row justify-start gap-0">
-                                       <p className="text-black text-sm font-light">{item.date}</p>
+                                    </div>
+                                    <div className='flex flex-col border gap-0 h-full w-full'>
+                                        <div className="flex flex-row justify-start gap-0">
+                                            <p className="text-black text-sm font-light">{item.date}</p>
                                         </div>
-                                    <div className='flex flex-col items-center mt-[140px]'>
-                                        <div className="flex flex-row items-center">
-                                            <div className="flex border">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                ))}
+                                        <div className='flex flex-col items-center mt-[140px]'>
+                                            <div className="flex flex-row items-center">
+                                                <div className="flex border">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                    ))}
+                                                </div>
+                                                <p className="text-black text-sm font-bold">.</p>
+                                                <div className="flex border">
+                                                    {[...Array(2)].map((_, i) => (
+                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                            <p className="text-black text-sm font-bold">.</p>
-                                            <div className="flex border">
-                                                {[...Array(2)].map((_, i) => (
-                                                    <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                ))}
-                                            </div>
+                                            <p className='text-black text-sm font-light mt-2'>จำนวนครั้งที่นับได้ครั้งที่2</p>
+                                            <p className='text-black text-sm font-light mt-3'>...............................</p>
+                                            <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่2</p>
                                         </div>
-                                        <p className='text-black text-sm font-light mt-2'>จำนวนครั้งที่นับได้ครั้งที่2</p>
-                                        <p className='text-black text-sm font-light mt-3'>...............................</p>
-                                        <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่2</p>
+                                    </div>
+                                    <div className='flex flex-col border gap-0 h-full w-full'>
+                                        <div className='flex flex-col items-center mt-40'>
+                                            <div className="flex flex-row items-center">
+                                                <div className="flex border">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                    ))}
+                                                </div>
+                                                <p className="text-black text-sm font-bold">.</p>
+                                                <div className="flex border">
+                                                    {[...Array(2)].map((_, i) => (
+                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className='text-black text-sm font-light mt-2'>จำนวนที่นับได้</p>
+                                            <p className='text-black text-sm font-light mt-3'>...............................</p>
+                                            <p className='text-black text-sm font-light'>ผู้ตรวจสอบ</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className='flex flex-col border gap-0 h-full w-full'>
-                                    <div className='flex flex-col items-center mt-40'>
-                                        <div className="flex flex-row items-center">
-                                            <div className="flex border">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                ))}
-                                            </div>
-                                            <p className="text-black text-sm font-bold">.</p>
-                                            <div className="flex border">
-                                                {[...Array(2)].map((_, i) => (
-                                                    <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <p className='text-black text-sm font-light mt-2'>จำนวนที่นับได้</p>
-                                        <p className='text-black text-sm font-light mt-3'>...............................</p>
-                                        <p className='text-black text-sm font-light'>ผู้ตรวจสอบ</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
 
-                        {/* This will insert a page break after every 4 items */}
-                        {<div className="page-break"></div>}
+                            {/* This will insert a page break after every 4 items */}
+                            {<div className="page-break"></div>}
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
 
     )

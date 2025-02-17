@@ -23,6 +23,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "dayjs": "^1.11.10",
+    "file-saver": "^2.0.5",
     "localforage": "^1.10.0",
     "lucide-react": "^0.372.0",
     "match-sorter": "^6.3.4",
@@ -39,9 +40,11 @@
     "sort-by": "^0.0.2",
     "sweetalert2": "^11.16.0",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",

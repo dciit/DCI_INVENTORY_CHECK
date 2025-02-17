@@ -2,6 +2,9 @@ import { PrinterOutlined, SearchOutlined } from "@ant-design/icons"
 import { Button, Input } from "antd"
 import { useState } from "react";
 import imgprinter from "../assets/printer.jpg";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 interface RowData {
     no: number;
     wc: string;
@@ -42,6 +45,18 @@ function SummerizeGoods() {
     const [tableData, setTableData] = useState(initialData);
 
 
+    const exportToExcel = () => {
+        const ws = XLSX.utils.json_to_sheet(initialData);
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb,ws, "Sheet1");
+
+        const excelBuffer = XLSX.write(wb, {bookType: "xlsx", type: "array"});
+        const blob = new Blob([excelBuffer],{type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"});
+
+        saveAs(blob, "dataPartlist.xlsx");
+
+    }
 
     return (
         <head className="flex flex-col px-8 py-8">
@@ -92,7 +107,7 @@ function SummerizeGoods() {
                 </div>
             </div>
             <div className="flex flex-row w-full mt-4 justify-end">
-                <a href="">
+                <a onClick={exportToExcel}>
                     <img src={imgprinter} alt=""  className="w-24 h-16"/>
                 </a>
             </div>
@@ -140,8 +155,6 @@ function SummerizeGoods() {
                         </tbody>
                     </table>
                 </div>
-
-
             </body>
         </head>
 
@@ -149,3 +162,4 @@ function SummerizeGoods() {
 }
 
 export default SummerizeGoods
+
