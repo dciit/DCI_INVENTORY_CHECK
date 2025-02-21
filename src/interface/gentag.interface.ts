@@ -1,4 +1,4 @@
-export interface InventoryInfo {
+export interface TagInfo {
     ivSetCode: string;
     ym: string;
     wcno: string;
@@ -28,6 +28,6 @@ export interface InventoryInfo {
     qrCode: string;
 }
 
-export interface  Valueinvcheck{
-    qty: string | number;
+export interface DataTag {
+    paramWCNO: string;
 }

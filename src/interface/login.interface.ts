@@ -3,8 +3,8 @@ export interface LoginByInterface {
     value: string;
 }
 export interface LoginData {
-    user: string;
-    pass: string;
+    ParamUser: string;
+    ParamPass: string;
 }
 export interface LoginInterface {
     login: boolean;

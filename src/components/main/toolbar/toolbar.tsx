@@ -1,12 +1,11 @@
-import { Avatar, Box, CircularProgress, Divider, Drawer, IconButton, Skeleton, Stack, Typography } from '@mui/material'
-import React, { useContext, useEffect, useState } from 'react'
+import { Avatar, Box,  Drawer, IconButton, Skeleton, Stack, Typography } from '@mui/material'
+import React, {  useEffect, useState } from 'react'
 import MenuComponent from './menu.toolbar'
 import { useDispatch, useSelector } from 'react-redux';
 // import logo from '../assets/logo.jpg'
 import { useNavigate } from 'react-router-dom';
 import DensityMediumIcon from '@mui/icons-material/DensityMedium';
 import { imagepath, projectName } from '@/constants';
-import { StringifyOptions } from 'querystring';
 function ToolbarComponent() {
     const dispatch = useDispatch();
     const navigate = useNavigate();

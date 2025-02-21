@@ -1,25 +1,18 @@
 import { ReduxInterface } from "../interface/main.interface"
 
 const initialState: ReduxInterface = {
-    code: '',
     login: false,
-    name: '',
-    surn: '',
-    fullname: '',
-    pren: '',
+    authen: {}
 }
 
 const IndexReducer = (state = initialState, action: any) => {
     switch (action.type) {
         case 'LOGIN':
+            // console.log(action.payload)
             return {
                 ...state,
                 login: true,
-                name: action.payload.name,
-                surn: action.payload.surn,
-                code: action.payload.code,
-                fullname: action.payload.fullname,
-                pren: action.payload.pren
+                authen: action.payload
             }
         case 'LOGOUT':
             return {

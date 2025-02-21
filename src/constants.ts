@@ -1,5 +1,5 @@
-const base = 'template'
-const hrapi = 'http://dciweb.dci.daikin.co.jp/inventapi';
+const base = 'ivcount'
+const ivurl = 'https://scm.dci.co.th/ivcountapi';
 const projectName = 'PROJECT NAME';
 const imagepath = 'http://dcidmc.dci.daikin.co.jp/PICTURE/';
-export { hrapi, projectName, imagepath,base }
+export { ivurl, projectName, imagepath,base }

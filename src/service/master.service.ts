@@ -1,7 +1,7 @@
-import { hrapi } from "@/constants";
+import { ivurl } from "@/constants";
 import axios from "axios";
 const http = axios.create({
-    baseURL: hrapi,
+    baseURL: ivurl,
     headers: {
         'Content-Type' : 'application/json;charset=UTF-8;json/html; charset=UTF-8',
     }

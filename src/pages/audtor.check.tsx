@@ -1,15 +1,21 @@
-import { BOMInfo, Master, MasterData, MasterInterface, PartListQtyInfo, PropPartUsed } from "@/interface/compressorcheck";
+import { BOMInfo, Master, MasterData, MasterInterface, ModelList, PartListDetInfo, PartListQtyInfo, PropPartUsed, Wcno } from "@/interface/compressorcheck";
+import { ReduxInterface } from "@/interface/main.interface";
+import { API_EXPORTPARTLIST_SELECT } from "@/service/invsave.service";
 import { API_MASTER_CHECK_INVENTORY } from "@/service/master.service";
-import { API_PARTLIST_CHECK_INVENTORY } from "@/service/partlist.service";
+import { API_PARTLIST_CHECK_INVENTORY, API_SELECT_MODELLIST, API_SELECT_WCNO } from "@/service/partlist.service";
 import { SearchOutlined } from "@ant-design/icons";
-import { Alert, Button, Input, InputRef } from "antd"
+import { Alert, Button, Input, RefSelectProps, Select } from "antd"
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { ToastContainer } from "react-toastify";
+// import Swal from "sweetalert2";
 
 
 function AuditorFill() {
 
+    const redux: ReduxInterface = useSelector((state: any) => state.reducer)
 
-    const [search, setSearch] = useState<MasterInterface>({
+    const [serach, setSearch] = useState<MasterInterface>({
         serach: false,
         load: false,
         message: '',
@@ -20,55 +26,113 @@ function AuditorFill() {
         paramModel: '',
     })
 
-    const [tableData, setTableData] = useState<Master[]>([]);
-    const [codeModel, setCodeModel] = useState<string>("");
-    const [ProcessParts, setProcessPartsData] = useState<PropPartUsed[]>([]);
-
+    const [masterData, setMasterData] = useState<Master[]>([]);
+    const [processParts, setProcessPartsData] = useState<PropPartUsed[]>([]);
     const [oPartList, setPartList] = useState<PartListQtyInfo[]>([]);
 
-    const refWCNO = useRef<InputRef>(null);
-    const refModel = useRef<InputRef>(null);
+
+    const [wcno, setWcno] = useState<Wcno[]>([])
+    const [modellist, setModelList] = useState<ModelList[]>([])
+
+    const refWCNO = useRef<RefSelectProps>(null);
+    const refModel = useRef<RefSelectProps>(null);
+
+
+    // const notifyErr = (msg: string) => {
+    //     toast.error(`Err : ${msg}`);
+    // };
+
+    // const notifyOk = (msg: string) => {
+    //     toast.success(`Ok : ${msg}`);
+    // };
+
+
+    useEffect(() => {
+        const fetchWcno = async () => {
+            const wcnodata = await API_SELECT_WCNO();
+            if (wcnodata.status !== false) {
+                setWcno(wcnodata);
+            } else {
+                console.error("Error fetching wcno:", wcnodata.message);
+            }
+        };
+
+        const fetchModellist = async () => {
+            const modellistdata = await API_SELECT_MODELLIST();
+            if (modellistdata.status !== false) {
+                setModelList(modellistdata);
+            } else {
+                console.error("Error fetching modellist:", modellistdata.message);
+            }
+        };
+
+        fetchWcno();
+        fetchModellist();
+    }, []);
 
 
     async function handleSearchData() {
         if (!searchData.paramWCNO || !searchData.paramModel) {
             if (!searchData.paramWCNO) {
                 refWCNO.current?.focus();
-                setSearch({ ...search, load: false, message: 'กรุณากรอก W/C' });
+                setSearch({ ...serach, load: false, message: 'กรุณากรอก W/C' });
                 return;
             }
             if (!searchData.paramModel) {
                 refModel.current?.focus();
-                setSearch({ ...search, load: false, message: 'กรุณากรอก model name' });
+                setSearch({ ...serach, load: false, message: 'กรุณากรอก model name' });
                 return;
             }
         }
 
-        if (searchData.paramWCNO || searchData.paramModel) {
-            setSearchData({ paramWCNO: "", paramModel: "" });
-        }
-
-        // Clear data
-        //setPartList([]);
+        //------------------ Get Master List
         let resSearch = await API_MASTER_CHECK_INVENTORY(searchData.paramWCNO, searchData.paramModel);
 
         if (Array.isArray(resSearch) && resSearch.length > 0) {
-            setTableData(resSearch);
+            setMasterData(resSearch);
         } else {
-            setTableData([]);
+            setMasterData([]);
         }
 
+        //------------------ Group By 
         let groupByPartlist: PropPartUsed[] = [];
+
+        //------------------ Get Last Data
+        let oLastPartListDatas = await API_EXPORTPARTLIST_SELECT(redux.authen.mSetInfo?.setCode!, searchData.paramWCNO, searchData.paramModel);
+
+        //------------------ Set Part List Data
         let resPartlist = await API_PARTLIST_CHECK_INVENTORY(searchData.paramWCNO, searchData.paramModel);
-        // console.log('Data PartList:', resPartlist)
+
         const arPartList: PartListQtyInfo[] = [];
         resPartlist.map((oItem: BOMInfo) => {
-            const data = { wcno: oItem.wcno, model: oItem.model, proc_Code: oItem.proc_Code, partNo: oItem.partNo, cm: oItem.cm, usageQty: oItem.usageQty, calQty: 0 };
+
+            let _calQty = 0;
+            // ==== check have last data ====
+            if (oLastPartListDatas != null) {
+                const Lst: PartListDetInfo[] = oLastPartListDatas.filter((d: PartListDetInfo) =>
+                    d.wcno == oItem.wcno && d.model == oItem.model && d.partNo == oItem.partNo && d.cm == oItem.cm && d.proc_Code == oItem.proc_Code);
+                if (Lst.length > 0) {
+                    _calQty = Lst[0].calQty;
+                    console.log(_calQty);
+                }
+            }
+            // ==== check have last data ====
+
+            // คำนวณค่าใหม่จาก _calQty และ usageQty
+            let calculatedValue = 0;
+            if (_calQty > 0 && oItem.usageQty > 0) {
+                calculatedValue = _calQty / oItem.usageQty;
+            }
+
+            // Set part list 
+            const data: PartListQtyInfo = {
+                wcno: oItem.wcno, model: oItem.model, proc_Code: oItem.proc_Code, partNo: oItem.partNo, cm: oItem.cm, usageQty: oItem.usageQty, calQty: _calQty,
+                ivSetCode: "",
+                crBy: ""
+            };
             arPartList.push(data);
 
-            // setPartList([ ...oPartList, ...[{ wcno: oItem.wcno, model: oItem.model, proc_Code: oItem.proc_Code, partNo: oItem.partNo, cm: oItem.cm, usageQty: oItem.usageQty, calQty: 0 }] ]);
-
-            let indexOfProcName: number = groupByPartlist.findIndex((x: any) => x.procName == oItem.proc_Name)
+            let indexOfProcName: number = groupByPartlist.findIndex((x: any) => x.procName == oItem.proc_Name);
             if (indexOfProcName != -1) {
                 groupByPartlist[indexOfProcName].partNo = groupByPartlist[indexOfProcName].partNo.concat(oItem.partNo);
             } else {
@@ -76,17 +140,30 @@ function AuditorFill() {
                     procCode: oItem.proc_Code,
                     procName: oItem.proc_Name,
                     partNo: [oItem.partNo],
-                    cm: [oItem.cm]
-                })
+                    cm: [oItem.cm],
+                    calculatedValue: calculatedValue
+                });
             }
         });
 
+        // Set Part List data
         setPartList(arPartList);
-        setProcessPartsData(groupByPartlist)
+
+        //------------------ Set Process Parts Data
+        setProcessPartsData(groupByPartlist);
+
+        //----------------- Set Header Values
+        const calculatedHeaderValues = groupByPartlist.map((group) => {
+            // ใช้ calculatedValue ที่ได้คำนวณไปก่อนหน้านี้
+            // นำค่า calculatedValue ไปใช้แสดงใน input header
+            return group.calculatedValue || 0;
+        });
+
+        setHeaderValues(calculatedHeaderValues);  // Update header with the calculated values
     }
 
 
-    const [headerValues, setHeaderValues] = useState<number[]>(Array(ProcessParts.length).fill(0));
+    const [headerValues, setHeaderValues] = useState<number[]>(Array(processParts.length).fill(0));
     const headerSum = headerValues.reduce((acc, val) => acc + val, 0);
 
 
@@ -98,28 +175,64 @@ function AuditorFill() {
         })
 
         let ClonePartList = [...oPartList]
+        
         const _val: number = parseInt(event.target.value) || 0;
         const oFindPartLists = oPartList.filter((x) => x.proc_Code === procode)
 
         oFindPartLists.forEach((item: PartListQtyInfo) => {
             const _calQty: number = item.usageQty * _val;
 
-            const _idxData = oPartList.findIndex((x) => x.wcno === item.wcno && x.model === item.model && x.proc_Code === item.proc_Code && x.partNo === item.partNo && x.cm === item.cm);
-            console.log(_idxData);
+            const _idxData = oPartList.findIndex((x) => x.wcno === item.wcno && x.model === item.model && x.proc_Code == procode && x.partNo === item.partNo && x.cm === item.cm);
+            
             ClonePartList[_idxData].calQty = _calQty;
+
         })
-        setPartList(ClonePartList);
+        setPartList(ClonePartList)
     }
 
-    const handleClear = async () => {
-        if (headerValues) {
-            setHeaderValues([]);
-            setPartList(prev => prev.map(item => ({...item, calQty: 0})));
-        }
-    }
+    // const handleClear = async () => {
+    //     if (headerValues) {
+    //         setHeaderValues([]);
+    //         setPartList([]);
+    //         setMasterData([])
+    //         setSearchData({ paramWCNO: "", paramModel: "" })
+    //         setProcessPartsData([])
+    //     }
+    // }
+
+
+    // const handleSubmit = async () => {
+
+    //     const clonedArray = oPartList.map(item => ({ ...item }));
+    //     clonedArray.map((item) => {
+    //         item.ivSetCode = redux.authen.mSetInfo?.setCode,
+    //             item.crBy = redux.authen.sName
+    //     })
+    //     // console.log(clonedArray);
+
+    //     let submitinfo = await API_SAVE_INFO_INVENTORY(clonedArray)
+
+    //     if (submitinfo != null) {
+    //         Swal.fire({
+    //             icon: "success",
+    //             title: "Your data has been saved",
+    //             showConfirmButton: false,
+    //             timer: 1500
+    //         })
+    //     } else {
+    //         Swal.fire({
+    //             icon: "error",
+    //             title: "Your data hasn't been save",
+    //             showConfirmButton: false,
+    //             timer: 1500
+    //         })
+    //     }
+
+    //     // console.log(submitinfo)
+    // }
 
     useEffect(() => {
-    }, [headerValues, tableData, ProcessParts, oPartList])
+    }, [headerValues, masterData, processParts, oPartList])
 
 
 
@@ -127,7 +240,6 @@ function AuditorFill() {
         <head className="flex flex-col px-8 py-8">
             <div>
                 <div className="flex flex-row justify-between items-center">
-                    {/* <span className="w-1/6 p-6 bg-blue-900 border-4 border-black text-2xl text-white font-semibold text-center">AUDITEE</span> */}
                     <p className="w-3/6 py-5 border rounded-2xl bg-[#1C3879] text-3xl text-white font-bold text-center">
                         Finished Goods: Compressor (Assembly Line)
                         <hr className="mx-28 mt-2" />
@@ -152,38 +264,33 @@ function AuditorFill() {
                     <div className="flex justify-between gap-2">
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3  bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
-                            <Input
+                            <Select
                                 ref={refWCNO}
-                                type="text"
-                                id="wc"
-                                className="p-2.5 border border-black hover:border-black"
-                                autoFocus onChange={(e) => setSearchData({ ...searchData, paramWCNO: e.target.value })}
+                                showSearch
+                                placeholder="Select a person"
+                                optionFilterProp="label"
+                                className="w-52 h-14 border rounded-lg"
+                                value={searchData.paramWCNO}
+                                onChange={(value) => setSearchData({ ...searchData, paramWCNO: value })}
+                                options={wcno.map((wc) => ({ value: wc.wcno, label: wc.wcno }))}
                             />
                         </div>
                         <div className="mt-7 flex justify-between gap-2">
                             <span className="p-3 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Model Name</span>
-                            <Input
+                            <Select
                                 ref={refModel}
-                                type="text"
-                                id="model"
-                                className="w-56 p-2.5 border border-black hover:border-black"
-                                autoFocus onChange={(e) => setSearchData({ ...searchData, paramModel: e.target.value })}
-                            />
-                        </div>
-                        <div className="mt-7 flex justify-between gap-2">
-                            <span className="p-3 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Code Model</span>
-                            <Input
-                                type="text"
-                                id="codemodel"
-                                className="w-56 p-2.5 border border-black hover:border-black"
-                                value={codeModel}
-                                onChange={(e) => setCodeModel(e.target.value)}
+                                showSearch
+                                placeholder="เลือก Model"
+                                optionFilterProp="label"
+                                className="w-56 h-14 border rounded-lg"
+                                value={searchData.paramModel}
+                                onChange={(value) => setSearchData({ ...searchData, paramModel: value })}
+                                options={modellist.map((mdl) => ({ value: mdl.model, label: mdl.model }))}
                             />
                         </div>
                         <div id="search" className="flex flex-1 justify-end mt-7">
                             <Button
                                 onClick={handleSearchData}
-                                htmlType="submit"
                                 className="text-black focus:ring-4 focus:outline-none font-medium rounded-lg text-lg  py-7 flex items-center gap-2"
                             >
                                 <SearchOutlined className="text-xl" />
@@ -196,11 +303,6 @@ function AuditorFill() {
             </div>
 
             <body className="mt-10">
-                {/*process to produce*/}
-                {/* <div className="container rounded-2xl border-2 border-blue-800 p-10 ml-3 bg-white justify-start w-[25%]">
-                    <p className="text-lg text-black font-semibold">Process to produce</p>
-
-                </div> */}
                 {/* Table */}
                 <div className="overflow-x-auto p-4">
                     <table className="border-collapse border border-gray-400 w-full">
@@ -210,21 +312,21 @@ function AuditorFill() {
                                 <th className="border border-gray-400 px-4 py-2" rowSpan={2}>จำนวน Part ประกอบ</th>
                                 <th className="border border-gray-400 px-4 py-2" rowSpan={2}>Process</th>
                                 <th className="border border-gray-400 px-4 py-2" colSpan={1}>Qty Total</th>
-                                {Array.from({ length: ProcessParts.length }, (_, i) => (
+                                {Array.from({ length: processParts.length }, (_, i) => (
                                     <th key={i} className="border border-gray-400 px-2 py-1 text-center">
                                         {i + 1}
                                     </th>
                                 ))}
                             </tr>
                             <tr className="bg-[#F9F5EB]">
-                                <th className="border border-gray-400 px-4 py-2">{headerSum}</th>
+                                <th className="border border-gray-600 px-4 py-2">{headerSum}</th>
                                 {
-                                    ProcessParts.map((oItem: PropPartUsed, idx: number) => {
+                                    processParts.map((oItem: PropPartUsed, idx: number) => {
                                         return (
                                             <th key={idx} className="border border-gray-400 px-2 py-2 text-center">
                                                 <Input
                                                     type="text"
-                                                    className="bg-[#EAE3D2]"
+                                                    className="bg-[#fbf6c0]"
                                                     data-process={oItem.procCode}
                                                     data-partno={oItem.partNo}
                                                     data-cm={oItem.cm}
@@ -242,7 +344,7 @@ function AuditorFill() {
 
                         {/* Body */}
                         <tbody>
-                            {tableData.map((row, rowIndex) => (
+                            {masterData.map((row, rowIndex) => (
                                 <tr key={rowIndex} className="hover:bg-gray-100">
                                     <td className="border border-gray-400 px-4 py-2 text-center">{row.usageQty}</td>
                                     <div className="flex flex-row">
@@ -250,7 +352,7 @@ function AuditorFill() {
                                         <td className="border px-4 py-4 w-60">{row.proc_Name}</td>
                                     </div>
                                     <td className="border border-gray-400 px-4 py-2 text-center">
-                                        {ProcessParts.reduce((total, oItem) => {
+                                        {processParts.reduce((total, oItem) => {
                                             const oDatas = Array.isArray(oPartList)
                                                 ? oPartList.filter((c) =>
                                                     c.wcno === row.wcno &&
@@ -266,9 +368,7 @@ function AuditorFill() {
                                     </td>
 
                                     {
-                                        ProcessParts.map((oItem: PropPartUsed, idx: number) => {
-
-                                            // const oDatas = Array.isArray(oPartList.data) ?
+                                        processParts.map((oItem: PropPartUsed, idx: number) => {
                                             const oDatas: PartListQtyInfo[] = Array.isArray(oPartList) ? oPartList.filter((c) => c.wcno === row.wcno
                                                 && c.model === row.model && c.proc_Code === oItem.procCode
                                                 && c.partNo === row.partNo && c.cm === row.cm) : [];
@@ -288,8 +388,19 @@ function AuditorFill() {
 
                     </table>
                 </div>
-
             </body>
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable={false}
+                pauseOnHover={false}
+                theme="light"
+            />
         </head>
 
 

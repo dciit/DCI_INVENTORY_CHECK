@@ -1,159 +1,228 @@
-import React, { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import imgprinter from "../assets/printer.jpg";
-
-interface DataTag {
-    wc: string;
-    drawno: number;
-    cm: string;
-    location: string;
-    model: string;
-    des: string;
-    unit: string;
-    date: string;
-    // qrcore: string;
-}
+import { QRCode, RefSelectProps, Select } from 'antd';
+import { useSelector } from 'react-redux';
+import { ReduxInterface } from '@/interface/main.interface';
+import { DataTag, TagInfo } from '@/interface/gentag.interface';
+import { API_TEG_SELECT } from '@/service/gentag.service';
+import { API_SELECT_WCNO } from '@/service/partlist.service';
+import { Wcno } from '@/interface/compressorcheck';
 
 
 function GenTag() {
 
-    const initialData: DataTag[] = [
-        { wc: "901", drawno: 123, cm: "B", location: "Fac2", model: "2P581209-2-", des: "PIPE ASSY", unit: "PCS", date: "20240606" },
-        { wc: "901", drawno: 124, cm: "B", location: "Fac2", model: "2P584919-2A", des: "PIPE ASSY", unit: "SET", date: "20240606" },
-        { wc: "901", drawno: 125, cm: "B", location: "Fac2", model: "2PD03210-1B", des: "ACCUMULATOR ASSY", unit: "PCS", date: "20240606" },
-        { wc: "901", drawno: 126, cm: "B", location: "Fac4", model: "2P581209-2-2", des: "ACCUMULATOR ASSY", unit: "PCS", date: "20240606" },
-        { wc: "901", drawno: 127, cm: "B", location: "Fac2", model: "2PD04447-1D", des: "PIPE ASSY", unit: "PCS", date: "20240606" },
-        { wc: "901", drawno: 128, cm: "B", location: "Fac2", model: "2P581209-2-", des: "PIPE ASSY", unit: "PCS", date: "20240606" },
-        { wc: "901", drawno: 129, cm: "B", location: "Fac2", model: "2P581202-2-", des: "PIPE ASSY", unit: "PCS", date: "20240606" },
-        { wc: "901", drawno: 121, cm: "B", location: "Fac2", model: "2P581209-2-", des: "PIPE ASSY", unit: "PCS", date: "20240606" },
-    ];
 
-    console.log(initialData);
-    const [Data, setTableData] = useState<DataTag[]>(initialData);
+    const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
+
+    const [tagData, setTagData] = useState<TagInfo[]>([]);
+    const [wcno, setWcno] = useState<Wcno[]>([]);
+
+    const [loading, setLoading] = useState(false);
+
+    const [searchData, setSearchData] = useState<DataTag>({
+        paramWCNO: '',
+    });
 
 
-    // const valuesLength = tableData.length > 0 ? tableData[0].wc.
+
+
+    const refWCNO = useRef<RefSelectProps>(null)
+
+    useEffect(() => {
+        const fetchWcno = async () => {
+            const wcnodata = await API_SELECT_WCNO();
+            if (wcnodata.status !== false) {
+                setWcno(wcnodata);
+                setLoading(false);
+            } else {
+                console.error("Error fetching wcno:", wcnodata.message);
+            }
+        };
+
+
+        const fetchTag = async () => {
+            const tagdata = await API_TEG_SELECT(oAccount.authen.mSetInfo?.setCode!,
+                oAccount.authen.mSetInfo?.ym!,
+                searchData.paramWCNO!);
+            if (tagdata.status !== false) {
+                setTagData(tagdata);
+                console.log(tagdata)
+            } else {
+                console.log('Error fetching tag', tagdata);
+            }
+        };
+
+
+        fetchWcno();
+        setLoading(false)
+        fetchTag();
+
+    }, [searchData.paramWCNO]);
+
+    if (loading) {
+        return <p>...loading</p>;
+    }
+
+
 
     return (
         <div>
-            <a href="#" onClick={() => window.print()}>
-                <img src={imgprinter} alt="Print" className="w-24 h-16 print:hidden" />
-            </a>
-            <div className="w-[210mm] h-[297mm] border mx-auto">
-                {[...Array(Math.ceil(Data.length / 4))].map((_, pageIndex) => (
+            <div className='flex flex-row gap-2'>
+                <a href="#" onClick={() => window.print()}>
+                    <img src={imgprinter} alt="Print" className="mt-2 w-24 h-16 print:hidden" />
+                </a>
+                <div className="mt-2 flex justify-between gap-2 print:hidden">
+                    <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
+                    <Select
+                        ref={refWCNO}
+                        showSearch
+                        placeholder="Select a person"
+                        optionFilterProp="label"
+                        className="w-52 h-14 border rounded-lg"
+                        value={searchData.paramWCNO}
+                        onChange={(value) => setSearchData({ ...searchData, paramWCNO: value })}
+                        options={wcno.map((wc) => ({ value: wc.wcno, label: wc.wcno }))}
+                    />
+
+                </div>
+            </div>
+
+            <div className="w-[210mm] h-[297mm]  mx-auto">
+                {[...Array(Math.ceil(tagData.length / 4))].map((_, pageIndex) => (
                     <div key={pageIndex} className="page h-full break-after-page">
-                        <div className="grid grid-rows-4 border h-full">
-                            {/* Loop for 4 items per page */}
-                            {Data.slice(pageIndex * 4, (pageIndex + 1) * 4).map((item, rowIndex) => (
-                                <div key={rowIndex} className="bg-white flex items-center justify-center border border-gray-300">
-                                    <div className="flex flex-col border gap-0 h-full w-full">
-                                        <div className="flex flex-row justify-end gap-0">
-                                            <div className="flex gap-2">
-                                                <p className="text-black text-sm font-light">DCI</p>
-                                                <p className="text-black text-sm font-light">PHYSICAL</p>
+                        <div className="grid grid-rows-[25%_25%_25%_25%]  h-full">
+                            {tagData.slice(pageIndex * 4, (pageIndex + 1) * 4)
+                                .filter((item) => item.wcno.startsWith(""))
+                                .map((item, rowIndex) => (
+                                    // oLineTyps.map((ln) => (
+                                    <div key={rowIndex} className="bg-white flex border-b p-4 border-dashed items-center justify-center relative ">
+                                        <div className="flex flex-col border-r border-dashed gap-0 h-full w-full  ">
+                                            <div className="flex flex-row flex-none justify-end gap-0">
+                                                <div className="flex gap-2">
+                                                    <p className="text-black text-sm font-light">DCI</p>
+                                                    <p className="text-black text-sm font-light">PHYSICAL</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col grow items-center mt-1"></div>
+                                            <div className="flex flex-col flex-none items-center mt-1">
+                                                <p className="text-black text-sm font-light mt-4">............................................</p>
+                                                <p className="text-black text-sm font-light mt-2">ผู้ตรวจสอบ DWG/ </p>
+                                                <p className="text-black text-sm font-light mt-2">CM ใน TAG ให้ตรง</p>
+                                                <p className="text-black text-sm font-light mt-1">กับ PART (FM,LD) </p>
                                             </div>
                                         </div>
-
-                                        {/* Displaying data for each row */}
-                                        <div>
-                                            <p className="text-black text-start font-bold">WC : {item.wc} TAG : {String(pageIndex * 4 + rowIndex + 1).padStart(5, '0')}</p>
+                                        <div className="absolute top-7 left-0" >
+                                            <p className="text-black text-start font-bold">WC : {item.wcno} TAG : {item.tagNo}</p>
                                             <div className="flex flex-row justify-between gap-0">
                                                 <div className="flex gap-2">
                                                     <p className="text-black text-sm font-light">DRAWING N0.</p>
-                                                    <div className="flex flex-1 justify-end gap-3">
-                                                        <p className="text-black text-sm font-light">CM</p>
-                                                        <p className="text-black text-sm font-light">LOCATION:</p>
+                                                    <p className="text-black text-sm font-light">CM</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-black text-start font-bold">{item.partNo} {item.cm}</p>
+                                            <div>
+                                                <p className="text-black text-sm font-light">ชื่อชิ้นงาน: {item.partName}</p>
+                                                {item.lineType === "MAIN" ? (
+                                                    <p className="flex justify-between text-black text-sm font-light">
+                                                        สายการผลิต: MAIN
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-black text-sm font-light text-">
+                                                        สายการผลิต: FINAL
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <p className="text-black text-sm font-light">หน่วย : {item.whum}</p>
+                                        </div>
+                                        <div className='flex flex-col border-r border-dashed gap-0 h-full w-full'>
+                                            <div className='flex flex-row justify-staer ml-2'>
+                                                <div className='flex flex-1 justify-between gap-1'>
+                                                    <p className='text-black text-sm font-light'>INVENTORY</p>
+                                                    <p className='textt-black text-sm font-light'>วันที่.</p>
+                                                </div>
+                                            </div>
+                                            <p className='text-black text-sm font-light mt-6'>{item.loca1}</p>
+                                            <div className='flex flex-col items-center mt-[98px]'>
+                                                <div className="flex flex-row items-center">
+                                                    <div className="flex border">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-black text-2xl font-bold -mb-1">.</p>
+                                                    <div className="flex border">
+                                                        {[...Array(2)].map((_, i) => (
+                                                            <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                        ))}
                                                     </div>
                                                 </div>
+                                                <p className='text-black text-sm font-light mt-2'>จำนวนที่นับได้ครั้งที่1</p>
+                                                <p className='text-black text-sm font-light mt-3'>...............................</p>
+                                                <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่1</p>
                                             </div>
-                                            <p className="text-black text-start font-bold">{item.model}</p>
-                                            <p className="text-black text-sm font-light">DES : {item.des}</p>
-                                            <p className="text-black text-sm font-light">UNIT : {item.unit}</p>
-                                        </div>
 
-                                        <div className="flex flex-col items-center mt-6">
-                                            <p className="text-black text-sm font-light mt-4">............................................</p>
-                                            <p className="text-black text-sm font-light mt-2">ผู้ตรวจสอบ DWG/ </p>
-                                            <p className="text-black text-sm font-light mt-2">CM ใน TAG ให้ตรง</p>
-                                            <p className="text-black text-sm font-light mt-1">กับ PART (FM,LD) </p>
+                                        </div>
+                                        <div className='flex flex-col border-r border-dashed w-full h-full'>
+                                            <div className="flex flex-row justify-start">
+                                                <p className="text-black text-sm font-light">{item.crDate}</p>
+                                            </div>
+                                            <div className='flex flex-col items-center mt-[122px]'>
+                                                <div className="flex flex-row items-center">
+                                                    <div className="flex border">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-black text-2xl font-bold -mb-1">.</p>
+                                                    <div className="flex border">
+                                                        {[...Array(2)].map((_, i) => (
+                                                            <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <p className='text-black text-sm font-light mt-2'>จำนวนที่นับได้ครั้งที่2</p>
+                                                <p className='text-black text-sm font-light mt-3'>...............................</p>
+                                                <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่2 (auditee)</p>
+                                            </div>
+                                        </div>
+                                        <div className='flex flex-col gap-0 h-full w-full'>
+                                            <div className="flex flex-row justify-end mt-3">
+                                                <QRCode type="canvas" value={JSON.stringify(item.qrCode)} size={125}
+                                                    color="#000" // Black QR code
+                                                    bgColor="transparent" // Transparent background
+                                                    // style={{
+                                                    //     border: "none", // Ensure no border
+                                                    //     background: "none", // No background
+                                                    //     padding: 0, // Remove any padding
+                                                    //     boxShadow: "none", // Ensure no shadow
+                                                    // }}
+                                                />
+                                            </div>
+                                            <div className='flex flex-col items-center mt-1'>
+                                                <div className="flex flex-row items-center">
+                                                    <div className="flex border">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-black text-2xl font-bold -mb-1">.</p>
+                                                    <div className="flex border">
+                                                        {[...Array(2)].map((_, i) => (
+                                                            <div key={i} className="w-6 h-6 border border-gray-300"></div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <p className='text-black text-sm font-light mt-2'>จำนวนที่นับได้ครั้งที่3</p>
+                                                <p className='text-black text-sm font-light mt-3'>...............................</p>
+                                                <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่3 (auditor)</p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className='flex flex-col border gap-0 h-full w-full'>
-                                        <div className='flex flex-row justify-staer ml-2'>
-                                            <div className='flex flex-1 justify-between gap-1'>
-                                                <p className='text-black text-sm font-light'>INVENTORY</p>
-                                                <p className='text-black text-sm font-light'>TAG</p>
-                                                <p className='textt-black text-sm font-light'>NO.</p>
-                                            </div>
-                                        </div>
-                                        <p className='text-black text-sm font-light mt-6'>{item.location}</p>
-                                        <div className='flex flex-col items-center mt-24'>
-                                            <div className="flex flex-row items-center">
-                                                <div className="flex border">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                    ))}
-                                                </div>
-                                                <p className="text-black text-sm font-bold">.</p>
-                                                <div className="flex border">
-                                                    {[...Array(2)].map((_, i) => (
-                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <p className='text-black text-sm font-light mt-2'>จำนวนครั้งที่นับได้ครั้งที่1</p>
-                                            <p className='text-black text-sm font-light mt-3'>...............................</p>
-                                            <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่1</p>
-                                        </div>
+                                )
 
-                                    </div>
-                                    <div className='flex flex-col border gap-0 h-full w-full'>
-                                        <div className="flex flex-row justify-start gap-0">
-                                            <p className="text-black text-sm font-light">{item.date}</p>
-                                        </div>
-                                        <div className='flex flex-col items-center mt-[140px]'>
-                                            <div className="flex flex-row items-center">
-                                                <div className="flex border">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                    ))}
-                                                </div>
-                                                <p className="text-black text-sm font-bold">.</p>
-                                                <div className="flex border">
-                                                    {[...Array(2)].map((_, i) => (
-                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <p className='text-black text-sm font-light mt-2'>จำนวนครั้งที่นับได้ครั้งที่2</p>
-                                            <p className='text-black text-sm font-light mt-3'>...............................</p>
-                                            <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่2</p>
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col border gap-0 h-full w-full'>
-                                        <div className='flex flex-col items-center mt-40'>
-                                            <div className="flex flex-row items-center">
-                                                <div className="flex border">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                    ))}
-                                                </div>
-                                                <p className="text-black text-sm font-bold">.</p>
-                                                <div className="flex border">
-                                                    {[...Array(2)].map((_, i) => (
-                                                        <div key={i} className="w-6 h-6 border border-gray-300"></div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <p className='text-black text-sm font-light mt-2'>จำนวนที่นับได้</p>
-                                            <p className='text-black text-sm font-light mt-3'>...............................</p>
-                                            <p className='text-black text-sm font-light'>ผู้ตรวจสอบ</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {/* This will insert a page break after every 4 items */}
-                            {<div className="page-break"></div>}
+                                )}
+                            {tagData.length >= 4 && pageIndex < Math.ceil(tagData.length / 4) - 1 && <div className="page-break"></div>}
                         </div>
                     </div>
                 ))}

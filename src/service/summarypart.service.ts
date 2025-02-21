@@ -1,5 +1,4 @@
 import { ivurl } from "@/constants";
-import { PartListQtyInfo } from "@/interface/compressorcheck";
 import axios from "axios";
 const http = axios.create({
     baseURL: ivurl,
@@ -8,47 +7,43 @@ const http = axios.create({
     }
 });
 
-export function API_SETTAG_CODE(paramYMD: string, paramBy: string) {
+export function API_SUMMARY_HEADER(paramSetCode: string, paramWCNO: string) {
     return new Promise<any>(resolve => {
-        http.post(`/setdata_gen`,{paramYMD : paramYMD, paramBy : paramBy}).then((res) => {
+        http.post(`/summary_header`, {ivSetCode : paramSetCode, paramWCNO : paramWCNO}).then((res) => {
             resolve(res.data);
         }).catch((e) => {
-            console.log('Gen Data Success')
             resolve({
                 status: false,
                 message: e.response.statusText
-            })
-        })
+            });
+        });
     })
 }
 
-export function API_SAVE_INFO_INVENTORY(oPartList: PartListQtyInfo[]) {
+export function API_SUMMARY_PARTLIST(paramSetCode: string, paramWCNO: string) {
     return new Promise<any>(resolve => {
-        http.post(`/explodepart_record`,oPartList).then((res) => {
+        http.post(`/summary_partlist`, {ivSetCode : paramSetCode, paramWCNO : paramWCNO}).then((res) => {
             resolve(res.data);
         }).catch((e) => {
-            console.log('Sent Data Successful')
             resolve({
                 status: false,
                 message: e.response.statusText
-            })
-        })
+            });
+        });
     })
-    
 }
 
 
-export function API_EXPORTPARTLIST_SELECT(ivSetCode: string, paramWCNO: string, paramModel: string) {
+export function API_SUMMARY_DATA(paramSetCode: string, paramWCNO: string) {
     return new Promise<any>(resolve => {
-        http.post(`/explodepart_select`,{ivSetCode: ivSetCode, paramWCNO: paramWCNO, paramModel: paramModel}).then((res) => {
+        http.post(`/summary_data`, {ivSetCode : paramSetCode, paramWCNO : paramWCNO}).then((res) => {
             resolve(res.data);
         }).catch((e) => {
-            console.log('Sent Data Successful')
             resolve({
                 status: false,
                 message: e.response.statusText
-            })
-
-        })
+            });
+        });
     })
 }
+

@@ -1,15 +1,15 @@
-import { hrapi } from '@/constants';
+import { ivurl } from '@/constants';
 import axios from 'axios';
 const http = axios.create({
-    baseURL: hrapi,
+    baseURL: ivurl,
     headers: {
         'Content-Type': 'application/json;charset=UTF-8;json/html; charset=UTF-8',
     }
 });
 
-export function API_LOGIN_EMPLOYEE(code: string) {
+export function API_LOGIN_EMPLOYEE(ParamUser: string, ParamPass: string) {
     return new Promise<any>(resolve => {
-        http.get(`/login/${code}`).then((res) => {
+        http.post(`api/authen/authen`,{ ParamUser: ParamUser, ParamPass: ParamPass} ).then((res) => {
             resolve(res.data);
         }).catch((e)=>{
             console.log('asd')
