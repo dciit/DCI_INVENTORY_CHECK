@@ -7,6 +7,7 @@ import { DataTag, TagInfo } from '@/interface/gentag.interface';
 import { API_TEG_SELECT } from '@/service/gentag.service';
 import { API_SELECT_WCNO } from '@/service/partlist.service';
 import { Wcno } from '@/interface/compressorcheck';
+import dayjs from 'dayjs';
 
 
 function GenTag() {
@@ -111,7 +112,7 @@ function GenTag() {
                                                 <p className="text-black text-sm font-light mt-1">กับ PART (FM,LD) </p>
                                             </div>
                                         </div>
-                                        <div className="absolute top-7 left-0" >
+                                        <div className="absolute top-7 left-5" >
                                             <p className="text-black text-start font-bold">WC : {item.wcno} TAG : {item.tagNo}</p>
                                             <div className="flex flex-row justify-between gap-0">
                                                 <div className="flex gap-2">
@@ -165,7 +166,7 @@ function GenTag() {
                                         </div>
                                         <div className='flex flex-col border-r border-dashed w-full h-full'>
                                             <div className="flex flex-row justify-start">
-                                                <p className="text-black text-sm font-light">{item.crDate}</p>
+                                                <p className="text-black text-sm font-light">{dayjs(item.crDate).format('YYYY-MM')}</p>
                                             </div>
                                             <div className='flex flex-col items-center mt-[122px]'>
                                                 <div className="flex flex-row items-center">
@@ -186,20 +187,20 @@ function GenTag() {
                                                 <p className='text-black text-sm font-light'>ผู้ตรวจสอบครั้งที่2 (auditee)</p>
                                             </div>
                                         </div>
-                                        <div className='flex flex-col gap-0 h-full w-full'>
-                                            <div className="flex flex-row justify-end mt-3">
-                                                <QRCode type="canvas" value={JSON.stringify(item.qrCode)} size={125}
+                                        <div className='flex flex-col gap-0 h-full w-full justify-between'>
+                                            <div className="flex flex-row justify-end mt-5">
+                                                <QRCode type="canvas" className='p-0' value={JSON.stringify(item.qrCode)} size={90}
                                                     color="#000" // Black QR code
                                                     bgColor="transparent" // Transparent background
-                                                    // style={{
-                                                    //     border: "none", // Ensure no border
-                                                    //     background: "none", // No background
-                                                    //     padding: 0, // Remove any padding
-                                                    //     boxShadow: "none", // Ensure no shadow
-                                                    // }}
+                                                // style={{
+                                                //     border: "none", // Ensure no border
+                                                //     background: "none", // No background
+                                                //     padding: 0, // Remove any padding
+                                                //     boxShadow: "none", // Ensure no shadow
+                                                // }}
                                                 />
                                             </div>
-                                            <div className='flex flex-col items-center mt-1'>
+                                            <div className='flex flex-col items-center mt-[33px]'>
                                                 <div className="flex flex-row items-center">
                                                     <div className="flex border">
                                                         {[...Array(5)].map((_, i) => (

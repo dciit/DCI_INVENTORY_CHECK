@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 
-function DetailSumAuditee() {
+function DetailSumAuditor() {
 
     const location = useLocation();
     const tagData = location.state?.tagData;
@@ -27,7 +27,7 @@ function DetailSumAuditee() {
                 <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#E1EACD] text-3xl text-black font-bold text-center">
                     รายการนับวัตถุดิบของแต่ละสายการผลิต
                     <hr className="mx-28 mt-2  border-black" />
-                    <p className=" mt-2 text-2xl font-light">(Auditee)</p>
+                    <p className=" mt-2 text-2xl font-light">(Auditor)</p>
                 </p>
             </div>
             <body className="flex w-full p-4 justify-center mt-5">
@@ -47,7 +47,7 @@ function DetailSumAuditee() {
 
                         <tbody>
                             {tagData && tagData.map((item: any, index: number) => (
-                                // oLineTyps.map((ln) => (
+                                // oLineTyps.map((ln) => ())
                                     <tr key={index} className="dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
                                     <td className="border border-gray-600 px-4 py-2 text-center">{item.wcno}</td>
                                     <td className="border border-gray-600 px-4 py-2 text-center">{item.tagNo}</td>
@@ -69,14 +69,12 @@ function DetailSumAuditee() {
                     </table>
                 </div>
             </body>
-
-
         </head >
 
 
     )
 }
 
-export default DetailSumAuditee
+export default DetailSumAuditor
 
 

@@ -11,8 +11,8 @@ export interface ModelList {
 
 export interface MasterData {
     paramWCNO: string;
-    paramModel: string;
-    paramCodeModel: string
+    paramModel: string | undefined;
+    paramCodeModel: string | undefined;
 }
 
 export interface MasterInterface {

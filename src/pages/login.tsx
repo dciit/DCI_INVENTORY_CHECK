@@ -60,8 +60,16 @@ function Login() {
 
       const oRole = ['ADMIN','AUDITEE','AUDITOR'];
       let resLogin = await API_LOGIN_EMPLOYEE(loginData.ParamUser, loginData.ParamPass);
-
+      
       if (resLogin != null) {
+        if(resLogin.code == null){
+          notifyErr('ไม่สามารถเข้าสู่ระบบได้ เนื่องจากรหัสพนักงานนี้ ไม่ถูกต้อง')
+          return false;
+        }
+        if(resLogin.role == null){
+          notifyErr('ไม่สามารถเข้าสู่ระบบได้ เนื่องจาก Role ไม่ถูกต้อง')
+          return false;
+        }
         if (oRole.includes(resLogin.role)) {
           dispatch({
             type: 'LOGIN', payload: resLogin
@@ -101,17 +109,17 @@ function Login() {
 
 
   return (
-    <div className='flex items-center justify-center h-full bg-[#1E2A5E]'>
-      <div className="container rounded-2xl border shadow-lg p-5 text-center bg-[#FBFBFB]">
-        <div className='flex flex-row justify-around gap-3'>
-          <img src={imgCheck} alt="" className='h-[35%] w-[40%]' />
-          <div className='flex flex-col w-full justify-center items-center gap-2 border border-gray-300 rounded-xl'>
-            <div className="p-3 text-3xl font-bold text-black text-center">
+    <div className='flex items-center justify-center h-full bg-[#1E2A5E] min-h-screen px-4'>
+      <div className="container rounded-2xl border shadow-lg p-5 text-center bg-[#FBFBFB] max-w-lg md:max-w-3xl">
+        <div className='flex flex-col md:flex-row justify-around gap-3'>
+          <img src={imgCheck} alt="" className='h-[150px] md:h-[35%] w-full md:w-[40%] object-contain' />
+          <div className='flex flex-col w-full justify-center items-center gap-2 border border-gray-300 rounded-xl p-4'>
+            <div className="p-3 text-2xl md:text-3xl font-bold text-black text-center">
               CHECK INVENTORY DAY
             </div>
-            <form className='w-full max-w-2xl  mt-7'>
+            <form className='w-full max-w-md mt-5'>
               <div className='mb-6'>
-                <div className='flex flex-nowrap gap-2'>
+                <div className='flex flex-col md:flex-row gap-2'>
                   <label
                     htmlFor="username"
                     className='p-3 border border-black rounded-md bg-[#FFF5D7] font-semibold text-black flex items-center gap-2'
@@ -119,18 +127,18 @@ function Login() {
                     <UserOutlined />
                     USERNAME
                   </label>
-
                   <Input
                     ref={refUser}
                     type='text'
                     id='username'
                     placeholder='Enter username'
                     autoFocus
+                    className="w-full"
                     onChange={(e) => setLoginData({ ...loginData, ParamUser: e.target.value })}
                   />
                 </div>
-                <div className='mt-6'>
-                  <div className='flex flex-nowrap gap-2'>
+                <div className='mt-4'>
+                  <div className='flex flex-col md:flex-row gap-2'>
                     <label
                       htmlFor="password"
                       className='p-3 border border-black rounded-md bg-[#FFF5D7] font-semibold text-black flex items-center gap-2'
@@ -143,15 +151,16 @@ function Login() {
                       type='password'
                       id='password'
                       placeholder='*******'
+                      className="w-full"
                       onChange={(e) => setLoginData({ ...loginData, ParamPass: e.target.value })}
                     />
                   </div>
                 </div>
               </div>
             </form>
-            <div id="action" className='flexitems-center justify-center pt-[10px] mt-3'>
+            <div id="action" className='flex items-center justify-center pt-3 mt-3 w-full'>
               <Button
-                className='text-black bg-[#D4EBF8] hover:bg-[#D4EBF8] focus:ring-3 focus:outline-none focus:ring-[#D4EBF8] font-bold rounded-lg border-black text-lg w-full sm:w-auto px-44 py-6 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900'
+                className='text-black bg-[#D4EBF8] hover:bg-[#D4EBF8] focus:ring-3 focus:outline-none focus:ring-[#D4EBF8] font-bold rounded-lg border-black text-lg w-full sm:w-auto px-6 py-3 md:px-44 md:py-6 text-center'
                 onClick={handleLogin}
               >
                 Login
@@ -159,21 +168,20 @@ function Login() {
             </div>
           </div>
         </div>
-        {/*  */}
       </div>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable={false}
-        pauseOnHover={false}
-        theme="light"
-      />
-    </div>
+  <ToastContainer
+    position="top-right"
+    autoClose={3000}
+    hideProgressBar={false}
+    newestOnTop
+    closeOnClick
+    rtl={false}
+    pauseOnFocusLoss
+    draggable={false}
+    pauseOnHover={false}
+    theme="light"
+  />
+</div>
   )
 }
 

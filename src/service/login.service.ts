@@ -7,12 +7,11 @@ const http = axios.create({
     }
 });
 
-export function API_LOGIN_EMPLOYEE(ParamUser: string, ParamPass: string) {
+export function     API_LOGIN_EMPLOYEE(ParamUser: string, ParamPass: string) {
     return new Promise<any>(resolve => {
         http.post(`api/authen/authen`,{ ParamUser: ParamUser, ParamPass: ParamPass} ).then((res) => {
             resolve(res.data);
         }).catch((e)=>{
-            console.log('asd')
             resolve({
                 status : false,
                 message : e.response.statusText

@@ -111,7 +111,12 @@ function SummerizeGoods() {
                         className="w-52 h-14 border rounded-lg"
                         value={WCNO}
                         onChange={(value) => setWCNO(value)}
-                        options={arWCNO.map((wc) => ({ value: wc.wcno, label: wc.wcno }))}
+                        options={arWCNO
+                            .filter((wc) => (wc.wcno.startsWith("90") || wc.wcno.startsWith("92")) &&
+                                        wc.wcno !== '902' &&
+                                        wc.wcno !== '926'
+                                    )
+                            .map((wc) => ({ value: wc.wcno, label: wc.wcno }))}
                     />
                     <div id="search" className="flex flex-1 justify-end">
                         <Button
@@ -165,29 +170,29 @@ function SummerizeGoods() {
                         <tbody>
                             {sumPartlist.length > 0 ? (
                                 sumPartlist.map((row, rowIndex) => (
-                                    <tr key={rowIndex} className="hover:bg-gray-100">
-                                        <td className="border border-gray-400 px-4 py-2 sticky left-0 bg-white z-10 w-[50px] text-center shadow-md">
-                                            {rowIndex + 1}
-                                        </td>
-                                        <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-center shadow-md">{row.wcno}</td>
-                                        <td className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] whitespace-nowrap text-center shadow-md">{row.partNo}</td>
-                                        <td className="border border-gray-400 px-4 py-2 sticky left-[230px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
-                                        <td className="border border-gray-400 px-4 py-2 sticky left-[290px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partName}</td>
-                                        <td className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">{row.sumQty}</td>
-                                        {sumHeader.map((col, colIdx) => (
-
-                                            <td key={colIdx} className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">
-                                                {
-                                                    (sumData.filter((data) => data.model === col.model
-                                                        && data.partNo == row.partNo && row.cm == data.cm).length > 0) ?
-                                                        sumData.filter((data) => data.model === col.model &&
-                                                            data.partNo == row.partNo && row.cm == data.cm)[0].qty : 0
-                                                }
+                                        <tr key={rowIndex} className="hover:bg-gray-100">
+                                            <td className="border border-gray-400 px-4 py-2 sticky left-0 bg-white z-10 w-[50px] text-center shadow-md">
+                                                {rowIndex + 1}
                                             </td>
-                                        ))}
+                                            <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-center shadow-md">{row.wcno}</td>
+                                            <td className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] whitespace-nowrap text-center shadow-md">{row.partNo}</td>
+                                            <td className="border border-gray-400 px-4 py-2 sticky left-[230px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
+                                            <td className="border border-gray-400 px-4 py-2 sticky left-[290px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partName}</td>
+                                            <td className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">{row.sumQty}</td>
+                                            {sumHeader.map((col, colIdx) => (
 
-                                    </tr>
-                                ))
+                                                <td key={colIdx} className="border border-gray-400 px-4 py-2 text-center whitespace-nowrap">
+                                                    {
+                                                        (sumData.filter((data) => data.model === col.model
+                                                            && data.partNo == row.partNo && row.cm == data.cm).length > 0) ?
+                                                            sumData.filter((data) => data.model === col.model &&
+                                                                data.partNo == row.partNo && row.cm == data.cm)[0].qty : 0
+                                                    }
+                                                </td>
+                                            ))}
+
+                                        </tr>
+                                    ))
                             ) : (
                                 <tr>
                                     <td colSpan={sumHeader.length + 6} className="border border-gray-400 px-4 py-2 text-center text-red-600">

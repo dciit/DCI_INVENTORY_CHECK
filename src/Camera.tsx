@@ -1,3 +1,5 @@
+
+//@ts-nocheck
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 
@@ -39,7 +41,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onDetect }) => {
 
     return (
         <div>
-            <video ref={videoRef} style={{ width: "100%" }} />
+            <video ref={videoRef} style={{ width: '150px',height:'150px' }} />
             {error && <p style={{ color: "red" }}>Error: {error}</p>}
         </div>
     );

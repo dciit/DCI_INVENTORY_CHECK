@@ -1,13 +1,16 @@
 // import { base } from "@/constants";
 // import { Wcno } from "@/interface/compressorcheck";
 // import { DataTag } from "@/interface/gentag.interface";
+import { base } from "@/constants";
 import { ReduxInterface } from "@/interface/main.interface";
 import { CompareSum, SummatyTagCheckADTE } from "@/interface/summarypart.interface";
 import { API_SUMMARY_COMPARE, API_TEG_SUMCHECK_ADTE } from "@/service/conclusion.service";
 import { API_TEG_SELECT } from "@/service/gentag.service";
+import { HomeOutlined } from "@ant-design/icons";
 // import { API_SELECT_WCNO } from "@/service/partlist.service";
-import { RefSelectProps, Table } from "antd";
-import { useEffect, useRef, useState } from "react"
+import { Table } from "antd";
+import { Footer } from "antd/es/layout/layout";
+import { useEffect, useState } from "react"
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -19,11 +22,6 @@ function CompareSummary() {
     const [stagCheck, setTagCheck] = useState<SummatyTagCheckADTE[]>([])
     const [wcno, setWcno] = useState<string[]>([]);
 
-    // const [searchData, setSearchData] = useState<DataTag>({
-    //     paramWCNO: '',
-    // });
-
-    // const refWCNO = useRef<RefSelectProps>(null)
 
     const navigate = useNavigate();
     const oLineTyps = ['MAIN', 'FINAL'];
@@ -40,9 +38,8 @@ function CompareSummary() {
             if (checktag && Array.isArray(checktag)) {
                 setTagCheck(checktag);
 
-                const uniqueWcno = Array.from(new Set(checktag.map((item) => item.wcno)));
-                setWcno(uniqueWcno);
-                console.log("WCNO List:", uniqueWcno);
+                const uniqueFactories = Array.from(new Set(checktag.map((item) => item.wcno)));
+                setWcno(uniqueFactories);
             } else {
                 console.error("Invalid data format:", checktag);
             }
@@ -140,44 +137,55 @@ function CompareSummary() {
             title: "Factory",
             dataIndex: "factory",
             key: "factory",
-            align: 'center' as 'center'
+            align: "center" as "center",
+            filters: [
+                { text: "Fac1", value: "FAC1" },
+                { text: "Fac2", value: "FAC2" },
+                { text: "Fac3", value: "FAC3" },
+                { text: "ODM", value: "ODM" },
+            ],
+            onFilter: (value: any, record: { factory: any; }) => record.factory === value,
         },
         {
             title: "Product",
             dataIndex: "product",
             key: "product",
-            align: 'center' as 'center'
+            align: 'center' as 'center',
+
+
         },
         {
             title: "WC",
             dataIndex: "wcno",
             key: "wcno",
             align: 'center' as 'center',
+
+
         },
         {
             title: "Line Name",
             dataIndex: "wcnO_NAME",
             key: "wcnO_NAME",
             align: 'center' as 'center',
-            render: (_text: any, row: { wcno: string; lineType: string; wcnO_NAME: string; }) => {
-                if (row.wcno.startsWith('90')) {
-                    return (
-                        <>
-                            {row.lineType === "MAIN" ? (
-                                <span>
-                                    MAIN ASSEMBLY LINE {row.wcno.substring(2, 3)}
-                                </span>
-                            ) : (
-                                <span>
-                                    FINAL LINE LINE {row.wcno.substring(2, 3)}
-                                </span>
-                            )}
-                        </>
-                    );
-                } else {
-                    return <span>{row.wcnO_NAME}</span>
-                }
-            }
+            // render: (_text: any, row: { wcno: string; lineType: string; wcnO_NAME: string; } ) => {
+            //     if (row.wcno.startsWith('90')) {
+            //         return (
+            //             <>
+            //                 {row.lineType === "MAIN" ? (
+            //                     <span>
+            //                         MAIN ASSEMBLY LINE {row.wcno.substring(2, 3)}
+            //                     </span>
+            //                 ) : (
+            //                     <span>
+            //                         FINAL LINE LINE {row.wcno.substring(2, 3)}
+            //                     </span>
+            //                 )}
+            //             </>
+            //         );
+            //     } else {
+            //         return <span>{row.wcnO_NAME}</span>
+            //     }
+            // }
         },
         {
             title: "Completed",
@@ -203,78 +211,93 @@ function CompareSummary() {
                         }
                     </>
                 );
-            }
+            },
+        },        
+        {
+            title: 'BOOK A',
+            children: [
+                {
+                    title: "QTY",
+                    key: "totalBookQty",
+                    align: 'center' as 'center',
+                    render: (_text: any, row: { wcno: string; }) => {
+                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+                        const totalBookQty = compareRows.reduce((sum, item) => sum + (item.bookQty || 0), 0).toFixed(2);
+                        return <span>{totalBookQty}</span>;
+                    },
+                },
+                {
+                    title: "AMOUNT",
+                    key: "totalBookAmt",
+                    align: 'center' as 'center',
+                    render: (_text: any, row: { wcno: string; }) => {
+                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+                        const totalBookAmt = compareRows.reduce((sum, item) => sum + (item.bookAmt || 0), 0).toFixed(2);
+                        return <span>{totalBookAmt}</span>;
+                    },
+                },
+            ]
         },
 
         {
-            title: "Book",
-            key: "totalBookQty",
-            align: 'center' as 'center',
-            render: (_text: any, row: { wcno: string; }) => {
-                const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                const totalBookQty = compareRows.reduce((sum, item) => sum + (item.bookQty || 0), 0).toFixed(2);
-                return <span>{totalBookQty}</span>;
-            },
+            title: 'Auditee Check(B)',
+            children: [
+                {
+                    title: "Aditee Qty",
+                    key: "totalAuditeeQty",
+                    align: 'center' as 'center',
+                    render: (_text: any, row: { wcno: string; }) => {
+                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+                        const totalAuditeeQty = compareRows.reduce((sum, item) => sum + (item.auditeeQty || 0), 0).toFixed(2);
+                        return <span>{totalAuditeeQty}</span>;
+                    },
+                },
+                {
+                    title: "Auditee Amount",
+                    key: "totalAuditeeAmt",
+                    align: 'center' as 'center',
+                    render: (_text: any, row: { wcno: string; }) => {
+                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+                        const totalAuditeeAmt = compareRows.reduce((sum, item) => sum + (item.auditeeAmt || 0), 0).toFixed(2);
+                        return <span>{totalAuditeeAmt}</span>;
+                    },
+                },
+            ]
         },
+
         {
-            title: "Amount",
-            key: "totalBookAmt",
-            align: 'center' as 'center',
-            render: (_text: any, row: { wcno: string; }) => {
-                const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                const totalBookAmt = compareRows.reduce((sum, item) => sum + (item.bookAmt || 0), 0).toFixed(2);
-                return <span>{totalBookAmt}</span>;
-            },
+            title: 'Diff.(B-A)',
+            children: [
+                {
+                    title: "Aditee Diff Qty",
+                    key: "totalAuditeeDiffQty",
+                    align: 'center' as 'center',
+                    render: (_text: any, row: { wcno: string; }) => {
+                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+                        const totalAuditeeDiffQty = compareRows.reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0).toFixed(2);
+                        return <span>{totalAuditeeDiffQty}</span>;
+                    },
+                },
+                {
+                    title: "Aditee Diff Amount",
+                    key: "totalAuditeeDiffAmt",
+                    align: 'center' as 'center',
+                    render: (_text: any, row: { wcno: string; }) => {
+                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+                        const totalAuditeeDiffAmt = compareRows.reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0).toFixed(2);
+                        return <span>{totalAuditeeDiffAmt}</span>;
+                    },
+                },
+            ]
         },
-        {
-            title: "Aditee Qty",
-            key: "totalAuditeeQty",
-            align: 'center' as 'center',
-            render: (_text: any, row: { wcno: string; }) => {
-                const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                const totalAuditeeQty = compareRows.reduce((sum, item) => sum + (item.auditeeQty || 0), 0).toFixed(2);
-                return <span>{totalAuditeeQty}</span>;
-            },
-        },
-        {
-            title: "Auditee Amount",
-            key: "totalAuditeeAmt",
-            align: 'center' as 'center',
-            render: (_text: any, row: { wcno: string; }) => {
-                const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                const totalAuditeeAmt = compareRows.reduce((sum, item) => sum + (item.auditeeAmt || 0), 0).toFixed(2);
-                return <span>{totalAuditeeAmt}</span>;
-            },
-        },
-        {
-            title: "Aditee Diff Qty",
-            key: "totalAuditeeDiffQty",
-            align: 'center' as 'center',
-            render: (_text: any, row: { wcno: string; }) => {
-                const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                const totalAuditeeDiffQty = compareRows.reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0).toFixed(2);
-                return <span>{totalAuditeeDiffQty}</span>;
-            },
-        },
-        {
-            title: "Aditee Diff Amount",
-            key: "totalAuditeeDiffAmt",
-            align: 'center' as 'center',
-            render: (_text: any, row: { wcno: string; }) => {
-                const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                const totalAuditeeDiffAmt = compareRows.reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0).toFixed(2);
-                return <span>{totalAuditeeDiffAmt}</span>;
-            },
-        },
+
     ];
 
     const filteredStagCheck = stagCheck
         .filter((row) => row.factory && (row.factory.startsWith('FAC') || row.factory.startsWith('ODM')) && !row.wcno.startsWith('90'))
-        // .filter((row) => !searchData.paramWCNO || row.wcno === searchData.paramWCNO);
 
     const expandedRows = stagCheck
         .filter((row) => row.factory && (row.factory.startsWith('FAC') || row.factory.startsWith('ODM')) && row.wcno.startsWith('90'))
-        // .filter((row) => !searchData.paramWCNO || row.wcno === searchData.paramWCNO)
         .map((row) =>
             oLineTyps.map((ln) => ({
                 ...row,
@@ -285,20 +308,26 @@ function CompareSummary() {
 
     const data = [...filteredStagCheck, ...expandedRows];
 
+
     return (
         <head className="flex flex-col px-8 py-8">
             <div className="flex flex-row justify-center items-cente">
-                <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#A6F1E0] text-3xl text-black font-bold text-center">
+                <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#E1EACD] text-3xl text-black font-bold text-center">
                     รายการนับวัตถุดิบของแต่ละสายการผลิต
                     <hr className="mx-28 mt-2  border-black" />
                     <p className=" mt-2 text-2xl font-light">(Auditee)</p>
                 </p>
             </div>
-            <div className="mt-7 flex justify-start gap-2">
-                <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">WC</span>
-
+            <div className="flex flex-row gap-3 justify-start mr-5">
+                <div id="clear" className="mt-9 ml-5">
+                    <a
+                        href={`/${base}/home`}
+                        className="text-white bg-[#003092] hover:bg-[#003092]  focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center  dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
+                        <HomeOutlined />
+                    </a>
+                </div>
             </div>
-            <body className="flex flex-col w-full p-4 justify-center">
+            <body className="flex w-full p-4 justify-center">
                 <Table
                     columns={columns}
                     dataSource={data}
@@ -308,6 +337,7 @@ function CompareSummary() {
                     })}
                     pagination={false}
                     bordered
+                    scroll={{ y: 600 }}
                 />
             </body>
         </head>

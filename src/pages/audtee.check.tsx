@@ -1,7 +1,7 @@
 import { BOMInfo, Master, MasterData, MasterInterface, ModelList, PartListDetInfo, PartListQtyInfo, PropPartUsed, Wcno } from "@/interface/compressorcheck";
 import { API_MASTER_CHECK_INVENTORY } from "@/service/master.service";
 import { API_PARTLIST_CHECK_INVENTORY, API_SELECT_MODELLIST, API_SELECT_WCNO } from "@/service/partlist.service";
-import { SearchOutlined } from "@ant-design/icons";
+import { ClearOutlined, HomeOutlined, SearchOutlined } from "@ant-design/icons";
 import { Alert, Button, Input, RefSelectProps, Select } from "antd"
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import "../index.css";
@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { ReduxInterface } from "@/interface/main.interface";
 import { toast, ToastContainer } from "react-toastify";
 import Navbar from "@/components/main/navbar";
+import { base } from "@/constants";
 
 
 function AuditeeFill() {
@@ -67,17 +68,21 @@ function AuditeeFill() {
         };
 
         const fetchModellist = async () => {
-            const modellistdata = await API_SELECT_MODELLIST(searchData.paramWCNO);
-            if (modellistdata.status !== false) {
-                setModelList(modellistdata);
-            } else {
-                console.error("Error fetching modellist:", modellistdata.message);
+            if (searchData.paramWCNO) {
+                const modellistdata = await API_SELECT_MODELLIST(searchData.paramWCNO);
+                console.log(modellist)
+                if (modellistdata.status !== false) {
+                    setModelList(modellistdata);
+                } else {
+                    console.error("Error fetching modellist:", modellistdata.message);
+                }
             }
         };
 
         fetchWcno();
         fetchModellist();
-    }, []);
+    }, [searchData.paramWCNO]);
+
 
 
     async function handleSearchData() {
@@ -172,7 +177,7 @@ function AuditeeFill() {
             return group.calculatedValue || 0;
         });
 
-        setHeaderValues(calculatedHeaderValues); 
+        setHeaderValues(calculatedHeaderValues);
     }
 
     const [headerValues, setHeaderValues] = useState<number[]>(Array(ProcessParts.length).fill(0));
@@ -276,42 +281,54 @@ function AuditeeFill() {
                                 <Select
                                     ref={refWCNO}
                                     showSearch
-                                    placeholder="Select a person"
+                                    placeholder="Select W/C"
                                     optionFilterProp="label"
                                     className="w-52 h-14 border rounded-lg"
                                     value={searchData.paramWCNO}
-                                    onChange={(value) => setSearchData({ ...searchData, paramWCNO: value })}
+                                    onChange={(value) => setSearchData({ ...searchData, paramWCNO: value, paramCodeModel: '', paramModel: '' })}
                                     options={wcno
-                                        .filter((wc) => wc.wcno.startsWith("90") || wc.wcno.startsWith("92") || wc.wcno.startsWith("40") )
+                                        .filter((wc) =>
+                                            (wc.wcno.startsWith("90") ||
+                                                wc.wcno.startsWith("92")) &&
+                                            wc.wcno !== '902' &&
+                                            wc.wcno !== '926'
+                                        )
                                         .map((wc) => ({ value: wc.wcno, label: wc.wcno }))
                                     }
                                 />
+                            </div>
 
+                            <div className="mt-7 flex justify-between gap-2">
+                                <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Code Model</span>
+                                <Select
+                                    ref={refCodemodel}
+                                    showSearch
+                                    placeholder="Select Model"
+                                    optionFilterProp="label"
+                                    className="w-56 h-14 border rounded-lg"
+                                    value={searchData.paramCodeModel}
+                                    onChange={(value) => {
+                                        const selectedCodeModel = modellist.find((mdl) => mdl.modelCode === value);
+                                        setSearchData({ ...searchData, paramCodeModel: value, paramModel: selectedCodeModel?.model });
+                                    }}
+                                    options={modellist.map((mdl) => ({ value: mdl.modelCode, label: mdl.modelCode }))}
+                                />
                             </div>
                             <div className="mt-7 flex justify-between gap-2">
                                 <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Model Name</span>
                                 <Select
                                     ref={refModel}
                                     showSearch
-                                    placeholder="เลือก Model"
+                                    placeholder="Select Code Model"
                                     optionFilterProp="label"
                                     className="w-56 h-14 border rounded-lg"
                                     value={searchData.paramModel}
-                                    onChange={(value) => setSearchData({ ...searchData, paramModel: value })}
+                                    onChange={(value) => {
+                                        const selectModel = modellist.find((mdl) => mdl.model === value);
+                                        setSearchData({ ...searchData, paramModel: value, paramCodeModel: selectModel?.modelCode })
+                                    }}
+                                    // onChange={(value) => setSearchData({ ...searchData, paramModel: value })}
                                     options={modellist.map((mdl) => ({ value: mdl.model, label: mdl.model }))}
-                                />
-                            </div>
-                            <div className="mt-7 flex justify-between gap-2">
-                                <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Code Model</span>
-                                <Select
-                                    ref={refCodemodel}
-                                    showSearch
-                                    placeholder="เลือก Model"
-                                    optionFilterProp="label"
-                                    className="w-56 h-14 border rounded-lg"
-                                    value={searchData.paramCodeModel}
-                                    onChange={(value) => setSearchData({ ...searchData, paramCodeModel: value })}
-                                    options={modellist.map((mdl) => ({ value: mdl.modelCode, label: mdl.modelCode }))}
                                 />
                             </div>
                             <div id="search" className="flex flex-1 justify-end mt-7">
@@ -323,23 +340,28 @@ function AuditeeFill() {
                                     Search
                                 </Button>
                             </div>
+                            <div id="clear" className="mt-7">
+                                <button
+                                    onClick={handleClear}
+                                    type="submit"
+                                    className="text-white bg-[#B8001F] hover:bg-[#B8001F]  focus:outline-none focus:ring-rose-700 font-medium rounded-lg text-lg px-5 py-3.5 text-center  dark:bg-rose-900 dark:hover:bg-rose-900 dark:focus:ring-rose-900">
+                                    <ClearOutlined />
+                                </button>
+                            </div>
                         </div>
-
-
                     </div>
                     <Alert message="กรอกข้อมูลให้ครบก่อนทำการค้นหา" type="warning" className="w-[20%] mt-2" showIcon />
                 </div>
 
                 <body className="mt-10">
 
-                    <div className="flex flex-row gap-3 justify-end mr-5">
-                        <div id="clear" className="mt-7">
-                            <button
-                                onClick={handleClear}
-                                type="submit"
-                                className="text-white bg-[#B8001F] hover:bg-[#B8001F]  focus:outline-none focus:ring-rose-700 font-medium rounded-lg text-lg px-5 py-2 text-center  dark:bg-rose-900 dark:hover:bg-rose-900 dark:focus:ring-rose-900">
-                                Clear
-                            </button>
+                    <div className="flex flex-row gap-3 justify-start mr-5">
+                        <div id="clear" className="mt-9 ml-5">
+                            <a
+                                href={`/${base}/home`}
+                                className="text-white bg-[#003092] hover:bg-[#003092]  focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center  dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
+                                <HomeOutlined />
+                            </a>
                         </div>
                         <div id="save" className="mt-7">
                             <button
@@ -358,13 +380,14 @@ function AuditeeFill() {
                                 <tr className="bg-[#F9F5EB]">
                                     <th className="border border-gray-600 px-4 py-2" rowSpan={3}>จำนวน Part ประกอบ</th>
                                     <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Drawing</th>
+                                    <th className="border border-gray-600 px-4 py-2" rowSpan={3}>CM</th>
                                     <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Part Name</th>
                                     <th className="border border-gray-600 px-4 py-2" rowSpan={2}>Qty Total</th>
                                     <th className="border border-gray-600 px-4 py-2" colSpan={ProcessParts.length}>Process</th>
                                 </tr>
                                 <tr className="bg-[#F9F5EB]">
                                     {ProcessParts.map((oItem: PropPartUsed, i: number) => (
-                                        <th key={i} className="border border-gray-600 px-2 py-1 text-center -rotate-90">
+                                        <th key={i} className="border border-gray-600 px-2 py-1 text-center text-sm">
                                             {i + 1} - {oItem.procName}
                                         </th>
                                     ))}
@@ -390,44 +413,58 @@ function AuditeeFill() {
 
                             {/* Body */}
                             <tbody>
-                                {tableData.map((row, rowIndex) => (
-                                    <tr key={rowIndex} className="hover:bg-gray-100">
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{row.usageQty}</td>
-                                        <td className="border border-gray-600 px-4 py-4 w-30">{row.partNo}</td>
-                                        <td className="border border-gray-600 px-4 py-4 w-60">{row.partName}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-center">
+                                {tableData.length > 0 ? (
+                                    tableData.map((row, rowIndex) => (
+                                        <tr key={rowIndex} className="hover:bg-gray-100">
+                                            <td className="border border-gray-600 px-4 py-2 text-center">{row.usageQty}</td>
+                                            <td className="border border-gray-600 px-4 py-4 w-30 whitespace-nowrap">{row.partNo}</td>
+                                            <td className="border border-gray-600 px-4 py-4 w-20">{row.cm}</td>
+                                            <td className="border border-gray-600 px-4 py-4 w-60">{row.partName}</td>
+                                            <td className="border border-gray-600 px-4 py-2 text-center">
+                                                {
+                                                    ProcessParts.reduce((total, oItem) => {
+                                                        const oDatas = Array.isArray(oPartList)
+                                                            ? oPartList.filter((c) =>
+                                                                c.wcno === row.wcno &&
+                                                                c.model === row.model &&
+                                                                c.proc_Code === oItem.procCode &&
+                                                                c.partNo === row.partNo &&
+                                                                c.cm === row.cm
+                                                            )
+                                                            : [];
+                                                        return total + oDatas.reduce((sum, item) => sum + (item.calQty || 0), 0);
+                                                    }, 0).toFixed(4)
+                                                }
+                                            </td>
                                             {
-                                                ProcessParts.reduce((total, oItem) => {
-                                                    const oDatas = Array.isArray(oPartList)
-                                                        ? oPartList.filter((c) =>
-                                                            c.wcno === row.wcno &&
-                                                            c.model === row.model &&
-                                                            c.proc_Code === oItem.procCode &&
-                                                            c.partNo === row.partNo &&
-                                                            c.cm === row.cm
-                                                        )
-                                                        : [];
-                                                    return total + oDatas.reduce((sum, item) => sum + (item.calQty || 0), 0);
-                                                }, 0)
+                                                ProcessParts.map((oItem: PropPartUsed, idx: number) => {
+                                                    const oDatas: PartListQtyInfo[] = Array.isArray(oPartList) ? oPartList.filter((c) => c.wcno === row.wcno
+                                                        && c.model === row.model && c.proc_Code === oItem.procCode
+                                                        && c.partNo === row.partNo && c.cm === row.cm) : [];
+                                                    return (
+                                                        <td key={idx} className="border border-gray-600 text-center">
+                                                            <div
+                                                                className={`w-full h-full text-center mt-1 ${oDatas.length > 0 ? "bg-green-500" : "bg-white"}`}
+                                                            />
+                                                            {oDatas.length > 0 ? oDatas[0].calQty : ""}
+                                                        </td>
+                                                    )
+                                                })
                                             }
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="border border-gray-400 px-4 py-2 text-center text-red-600"
+                                        >
+                                            ไม่พบข้อมูล ติดต่อคุณวรกานต์(เมย์) เบอร์ 208
                                         </td>
-                                        {
-                                            ProcessParts.map((oItem: PropPartUsed, idx: number) => {
-                                                const oDatas: PartListQtyInfo[] = Array.isArray(oPartList) ? oPartList.filter((c) => c.wcno === row.wcno
-                                                    && c.model === row.model && c.proc_Code === oItem.procCode
-                                                    && c.partNo === row.partNo && c.cm === row.cm) : [];
-                                                return (
-                                                    <td key={idx} className="border border-gray-600 text-center">
-                                                        <div
-                                                            className={`w-full h-full text-center mt-1 ${oDatas.length > 0 ? "bg-green-500" : "bg-white"}`}
-                                                        />
-                                                        {oDatas.length > 0 ? oDatas[0].calQty : ""}
-                                                    </td>
-                                                )
-                                            })
-                                        }
                                     </tr>
-                                ))}
+
+                                )}
+
                             </tbody>
 
                         </table>
