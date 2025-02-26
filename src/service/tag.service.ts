@@ -77,3 +77,72 @@ export function API_TAG_RECORD_AUDITOR(ivSetCode: string, ym: string, wcno: stri
         })
     })
 }
+
+
+export function API_TAG_HISTORY_AUDITEE(ivSetCode: string, ym: string, wcno: string, partNo: string, cm: string) {
+    return new Promise<any>(resolve => {
+        http.post(`/tag_auditee_part_history`, {
+            ivSetCode: ivSetCode,
+            ym: ym,
+            wcno: wcno,
+            partNo: partNo,
+            cm: cm,
+        }).then((res) => {
+            resolve(res.data);
+        }).catch((e) => {
+            resolve({
+                status: false,
+                message: e.response.statusText
+            })
+        })
+    })
+}
+
+
+export function API_TAG_HISTORY_AUDITOR(ivSetCode: string, ym: string, wcno: string, partNo: string, cm: string) {
+    return new Promise<any>(resolve => {
+        http.post(`/tag_auditor_part_history`, {
+            ivSetCode: ivSetCode,
+            ym: ym,
+            wcno: wcno,
+            partNo: partNo,
+            cm: cm,
+        }).then((res) => {
+            resolve(res.data);
+        }).catch((e) => {
+            resolve({
+                status: false,
+                message: e.response.statusText
+            })
+        })
+    })
+}
+
+
+
+export function API_PERSON_HISTORY_AUDITOR(param: any) {
+    return new Promise<any>(resolve => {
+        http.post(`/tag_auditor_person_history`, param).then((res) => {
+            resolve(res.data);
+        }).catch((e) => {
+            resolve({
+                status: false,
+                message: e.response.statusText
+            })
+        })
+    })
+}
+
+
+export function API_PERSON_HISTORY_AUDITEE(param: any) {
+    return new Promise<any>(resolve => {
+        http.post(`/tag_auditee_person_history`, param).then((res) => {
+            resolve(res.data);
+        }).catch((e) => {
+            resolve({
+                status: false,
+                message: e.response.statusText
+            })
+        })
+    })
+}

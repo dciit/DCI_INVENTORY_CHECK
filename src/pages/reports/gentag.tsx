@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import imgprinter from "../assets/printer.jpg";
+import imgprinter from "../../assets/printer.jpg";
 import { QRCode, RefSelectProps, Select } from 'antd';
 import { useSelector } from 'react-redux';
 import { ReduxInterface } from '@/interface/main.interface';
 import { DataTag, TagInfo } from '@/interface/gentag.interface';
-import { API_TEG_SELECT } from '@/service/gentag.service';
+import { API_TEG_SELECT } from '@/service/tag.service';
 import { API_SELECT_WCNO } from '@/service/partlist.service';
 import { Wcno } from '@/interface/compressorcheck';
 import dayjs from 'dayjs';
+import Navbar from '@/components/main/navbar';
 
 
 function GenTag() {
@@ -36,7 +37,7 @@ function GenTag() {
                 setWcno(wcnodata);
                 setLoading(false);
             } else {
-                console.error("Error fetching wcno:", wcnodata.message);
+                //console.error("Error fetching wcno:", wcnodata.message);
             }
         };
 
@@ -46,10 +47,11 @@ function GenTag() {
                 oAccount.authen.mSetInfo?.ym!,
                 searchData.paramWCNO!);
             if (tagdata.status !== false) {
-                setTagData(tagdata);
-                console.log(tagdata)
+                setTagData(tagdata.filter((d: any) => d.lineType == 'EXPLODE'));
+                //setTagData(tagdata);
+                //console.log(tagdata)
             } else {
-                console.log('Error fetching tag', tagdata);
+                //console.log('Error fetching tag', tagdata);
             }
         };
 
@@ -68,6 +70,7 @@ function GenTag() {
 
     return (
         <div>
+            <Navbar />
             <div className='flex flex-row gap-2'>
                 <a href="#" onClick={() => window.print()}>
                     <img src={imgprinter} alt="Print" className="mt-2 w-24 h-16 print:hidden" />
@@ -123,15 +126,20 @@ function GenTag() {
                                             <p className="text-black text-start font-bold">{item.partNo} {item.cm}</p>
                                             <div>
                                                 <p className="text-black text-sm font-light">ชื่อชิ้นงาน: {item.partName}</p>
-                                                {item.lineType === "MAIN" ? (
+                                                {item.lineType === "MAIN" || item.lineType === "FINAL" ? (
                                                     <p className="flex justify-between text-black text-sm font-light">
-                                                        สายการผลิต: MAIN
+                                                        สายการผลิต: {item.lineType}
                                                     </p>
-                                                ) : (
-                                                    <p className="text-black text-sm font-light text-">
-                                                        สายการผลิต: FINAL
-                                                    </p>
-                                                )}
+                                                ) : (item.lineType === "EXPLODE") ?
+                                                    (
+                                                        <p className="text-black text-sm font-light text-">
+                                                            สายการผลิต: แตก Part
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-black text-sm font-light text-">
+                                                            สายการผลิต: {item.wcnO_NAME}
+                                                        </p>
+                                                    )}l
                                             </div>
 
                                             <p className="text-black text-sm font-light">หน่วย : {item.whum}</p>

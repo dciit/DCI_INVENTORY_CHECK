@@ -17,6 +17,7 @@ const IndexReducer = (state = initialState, action: any) => {
         case 'LOGOUT':
             return {
                 ...state,
+                authen: {},
                 login: false,
                 name: '',
                 surn: '',

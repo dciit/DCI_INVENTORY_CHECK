@@ -1,41 +1,49 @@
 import { base } from "@/constants";
+import { ReduxInterface } from "@/interface/main.interface";
+import { HomeOutlined } from "@ant-design/icons";
+import { Button } from "antd";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const dispatch = useDispatch();
+  const redux: ReduxInterface = useSelector((state: any) => state.reducer)
 
-    const [isOpen, setIsOpen] = useState(false);
-    // const [isInfoDropdownOpen, setIsInfoDropdownOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  // const [isInfoDropdownOpen, setIsInfoDropdownOpen] = useState(false);
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleLogout = ()=>{
-        navigate(`/login`);
-    }
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT', payload: {} })
+    navigate(`/login`);
+  }
 
-    return (
-        <nav className="bg-[#3674B5] border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-          <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-5">
-            {/* Logo */}
-            <a href={`/${base}/home`} className="flex items-center space-x-3">
-              <span className="text-2xl font-semibold text-white">Inventory Check</span>
-            </a>
-    
-            {/* Hamburger Menu Button for Mobile */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center p-2 text-white md:hidden"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"} />
-              </svg>
-            </button>
-    
-            {/* Desktop Menu */}
-            <div className={`w-full md:flex md:w-auto ${isOpen ? "block" : "hidden"}`} id="navbar-menu">
-              <ul className="flex flex-col md:flex-row md:space-x-8 font-medium p-4 md:p-0 mt-4 md:mt-0 md:border-0">
-                {/* Dropdown Menu */}
-                {/* <li className="relative">
+  return (
+    <nav className="bg-[#3674B5] border-gray-200 dark:bg-gray-900 dark:border-gray-700 print:hidden">
+      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-5">
+        {/* Logo */}
+        <a href={`/${base}/home`} className="flex items-center space-x-3">
+          <Button icon={<HomeOutlined />} type='primary' onClick={() => navigate(`../home`)}></Button>
+          <span className="text-2xl font-semibold text-white">DCI - นับสต๊อคประจำปี</span>
+        </a>
+
+        {/* Hamburger Menu Button for Mobile */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="inline-flex items-center p-2 text-white md:hidden"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"} />
+          </svg>
+        </button>
+
+        {/* Desktop Menu */}
+        <div className={`w-full md:flex md:w-auto ${isOpen ? "block" : "hidden"}`} id="navbar-menu">
+          <ul className="flex flex-col md:flex-row md:space-x-8 font-medium p-4 md:p-0 mt-4 md:mt-0 md:border-0">
+            {/* Dropdown Menu */}
+            {/* <li className="relative">
                   <button
                     onClick={() => setIsInfoDropdownOpen(!isInfoDropdownOpen)}
                     className="flex items-center justify-between w-full py-2 px-3 text-white bg-[#3674B5] md:bg-transparent"
@@ -68,21 +76,22 @@ function Navbar() {
                     </div>
                   )}
                 </li> */}
-    
-                {/* Logout */}
-                <li>
-                  <button
-                    className="py-2 px-3 text-white hover:text-gray-200 font-semibold"
-                    onClick={() => handleLogout()}
-                  >
-                    Log out
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      );
+
+            {/* Logout */}
+            <li className="py-3 px-3 text-white hover:text-gray-200 font-semibold">{redux.authen.sName}</li>
+            <li>
+              <button
+                className="py-2 px-3 text-white hover:text-gray-200 font-semibold"
+                onClick={() => handleLogout()}
+              >
+                Log out
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
 }
 
 export default Navbar;

@@ -1,21 +1,25 @@
 import { BOMInfo, Master, MasterData, MasterInterface, ModelList, PartListDetInfo, PartListQtyInfo, PropPartUsed, Wcno } from "@/interface/compressorcheck";
 import { API_MASTER_CHECK_INVENTORY } from "@/service/master.service";
 import { API_PARTLIST_CHECK_INVENTORY, API_SELECT_MODELLIST, API_SELECT_WCNO } from "@/service/partlist.service";
-import { ClearOutlined, HomeOutlined, SearchOutlined } from "@ant-design/icons";
-import { Alert, Button, Input, RefSelectProps, Select } from "antd"
+import { ClearOutlined, ProfileTwoTone, SearchOutlined } from "@ant-design/icons";
+import { Button, Input, RefSelectProps, Select } from "antd"
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import "../index.css";
-import "../assets/fonts/Nunito/Nunito-Regular.ttf"
+import "../../index.css";
+import "../../assets/fonts/Nunito/Nunito-Regular.ttf"
 import { API_EXPORTPARTLIST_SELECT, API_SAVE_INFO_INVENTORY } from "@/service/invsave.service";
 import { useSelector } from "react-redux";
 import { ReduxInterface } from "@/interface/main.interface";
 import { toast, ToastContainer } from "react-toastify";
 import Navbar from "@/components/main/navbar";
+import { CircularProgress } from "@mui/material";
+// import { base } from "@/constants";
+import { useNavigate } from "react-router-dom";
 
 
-function AuditorFill() {
+function AuditeeFill() {
 
-    const redux: ReduxInterface = useSelector((state: any) => state.reducer)
+    const redux: ReduxInterface = useSelector((state: any) => state.reducer);
+    const navigate = useNavigate();
 
 
     const [serach, setSearch] = useState<MasterInterface>({
@@ -34,6 +38,7 @@ function AuditorFill() {
     const [tableData, setTableData] = useState<Master[]>([]);
     const [ProcessParts, setProcessPartsData] = useState<PropPartUsed[]>([]);
     const [oPartList, setPartList] = useState<PartListQtyInfo[]>([]);
+    const [isLoad, setisLoad] = useState<boolean>(false);
 
 
     const [wcno, setWcno] = useState<Wcno[]>([]);
@@ -62,7 +67,7 @@ function AuditorFill() {
             if (wcnodata.status !== false) {
                 setWcno(wcnodata);
             } else {
-                console.error("Error fetching wcno:", wcnodata.message);
+                // console.error("Error fetching wcno:", wcnodata.message);
             }
         };
 
@@ -73,7 +78,7 @@ function AuditorFill() {
                 if (modellistdata.status !== false) {
                     setModelList(modellistdata);
                 } else {
-                    console.error("Error fetching modellist:", modellistdata.message);
+                    // console.error("Error fetching modellist:", modellistdata.message);
                 }
             }
         };
@@ -85,6 +90,8 @@ function AuditorFill() {
 
 
     async function handleSearchData() {
+        setisLoad(true);
+
         if (!searchData.paramWCNO || !searchData.paramModel) {
             if (!searchData.paramWCNO) {
                 refWCNO.current?.focus();
@@ -177,6 +184,8 @@ function AuditorFill() {
         });
 
         setHeaderValues(calculatedHeaderValues);
+
+        setisLoad(false);
     }
 
     const [headerValues, setHeaderValues] = useState<number[]>(Array(ProcessParts.length).fill(0));
@@ -246,10 +255,8 @@ function AuditorFill() {
             <head className="flex flex-col px-8 py-8">
                 <div>
                     <div className="flex flex-row justify-between items-center">
-                        <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#] text-3xl text-black font-bold text-center">
-                            Finished Goods: Compressor (Assembly Line)
-                            <hr className="mx-28 mt-2" />
-                            <p className=" mt-2 text-2xl font-light">(Auditee)</p>
+                        <p className="w-full mr-2 py-4 border border-gray-500 rounded-2xl bg-[#] text-3xl text-black font-bold text-center">
+                            หน้าแตก Part ใน Assembly Line โดย Auditee
                         </p>
                         <div className="flex flex-col gap-2">
                             <div className="flex flex-row gap-4">
@@ -259,7 +266,7 @@ function AuditorFill() {
                                 </div>
                             </div>
                             <div className="flex flex-row gap-4">
-                                <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Vision</span>
+                                <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Version</span>
                                 <div className="p-2 border border-black rounded-lg text-lg text-black font-semibold w-40">
                                     {rev}
                                 </div>
@@ -290,7 +297,9 @@ function AuditorFill() {
                                             (wc.wcno.startsWith("90") ||
                                                 wc.wcno.startsWith("92")) &&
                                             wc.wcno !== '902' &&
-                                            wc.wcno !== '926'
+                                            wc.wcno !== '926' &&
+                                            !wc.wcno.startsWith("7") &&
+                                            !wc.wcno.startsWith("6")
                                         )
                                         .map((wc) => ({ value: wc.wcno, label: wc.wcno }))
                                     }
@@ -349,142 +358,151 @@ function AuditorFill() {
                             </div>
                         </div>
                     </div>
-                    <Alert message="กรอกข้อมูลให้ครบก่อนทำการค้นหา" type="warning" className="w-[20%] mt-2" showIcon />
+                    {/* <Alert message="กรอกข้อมูลให้ครบก่อนทำการค้นหา" type="warning" className="w-[20%] mt-2" showIcon /> */}
                 </div>
-
-                <body className="mt-10">
-
-                    <div className="flex flex-row gap-3 justify-end mr-5">
-                        <div id="clear" className="mt-7">
-                            <button
-                                className="text-white bg-[#B8001F] hover:bg-[#B8001F]  focus:outline-none focus:ring-rose-700 font-medium rounded-lg text-lg px-5 py-2 text-center  dark:bg-rose-900 dark:hover:bg-rose-900 dark:focus:ring-rose-900">
-                                <HomeOutlined />
-                            </button>
-                        </div>
-                        <div id="save" className="mt-7">
-                            <button
-                                onClick={handleSubmit}
-                                className="text-white bg-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-lg px-5 py-2 text-center dark:bg-green-900 dark:hover:bg-green-900 dark:focus:ring-green-900">
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                    {/* <a href="/template/summerizegoods" className="text-blue-700 underline text-xl font-normal ml-5">Summary Part</a> */}
-                    {/* Table */}
-                    <div className="overflow-x-auto p-4">
-                        <table className="border-collapse border border-gray-600 w-full">
-                            {/* Header */}
-                            <thead>
-                                <tr className="bg-[#F9F5EB]">
-                                    <th className="border border-gray-600 px-4 py-2" rowSpan={3}>จำนวน Part ประกอบ</th>
-                                    <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Drawing</th>
-                                    <th className="border border-gray-600 px-4 py-2" rowSpan={3}>CM</th>
-                                    <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Part Name</th>
-                                    <th className="border border-gray-600 px-4 py-2" rowSpan={2}>Qty Total</th>
-                                    <th className="border border-gray-600 px-4 py-2" colSpan={ProcessParts.length}>Process</th>
-                                </tr>
-                                <tr className="bg-[#F9F5EB]">
-                                    {ProcessParts.map((oItem: PropPartUsed, i: number) => (
-                                        <th key={i} className="border border-gray-600 px-2 py-1 text-center text-sm">
-                                            {i + 1} - {oItem.procName}
-                                        </th>
-                                    ))}
-                                </tr>
-                                <tr className="bg-[#F9F5EB]">
-                                    <th className="border border-gray-600 px-4 py-2">{headerSum}</th>
-                                    {ProcessParts.map((oItem: PropPartUsed, idx: number) => (
-                                        <th key={idx} className="border border-gray-600 px-2 py-2 text-center">
-                                            <Input
-                                                type="text"
-                                                className="bg-[#fbf6c0]"
-                                                data-process={oItem.procCode}
-                                                data-partno={oItem.partNo}
-                                                data-cm={oItem.cm}
-                                                value={headerValues[idx]}
-                                                onChange={(e) => handleChange(idx, oItem.procCode, e)}
-                                            />
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-
-
-                            {/* Body */}
-                            <tbody>
-                                {tableData.length > 0 ? (
-                                    tableData.map((row, rowIndex) => (
-                                        <tr key={rowIndex} className="hover:bg-gray-100">
-                                            <td className="border border-gray-600 px-4 py-2 text-center">{row.usageQty}</td>
-                                            <td className="border border-gray-600 px-4 py-4 w-30 whitespace-nowrap">{row.partNo}</td>
-                                            <td className="border border-gray-600 px-4 py-4 w-20">{row.cm}</td>
-                                            <td className="border border-gray-600 px-4 py-4 w-60">{row.partName}</td>
-                                            <td className="border border-gray-600 px-4 py-2 text-center">
-                                                {
-                                                    ProcessParts.reduce((total, oItem) => {
-                                                        const oDatas = Array.isArray(oPartList)
-                                                            ? oPartList.filter((c) =>
-                                                                c.wcno === row.wcno &&
-                                                                c.model === row.model &&
-                                                                c.proc_Code === oItem.procCode &&
-                                                                c.partNo === row.partNo &&
-                                                                c.cm === row.cm
-                                                            )
-                                                            : [];
-                                                        return total + oDatas.reduce((sum, item) => sum + (item.calQty || 0), 0);
-                                                    }, 0).toFixed(4)
-                                                }
-                                            </td>
-                                            {
-                                                ProcessParts.map((oItem: PropPartUsed, idx: number) => {
-                                                    const oDatas: PartListQtyInfo[] = Array.isArray(oPartList) ? oPartList.filter((c) => c.wcno === row.wcno
-                                                        && c.model === row.model && c.proc_Code === oItem.procCode
-                                                        && c.partNo === row.partNo && c.cm === row.cm) : [];
-                                                    return (
-                                                        <td key={idx} className="border border-gray-600 text-center">
-                                                            <div
-                                                                className={`w-full h-full text-center mt-1 ${oDatas.length > 0 ? "bg-green-500" : "bg-white"}`}
-                                                            />
-                                                            {oDatas.length > 0 ? oDatas[0].calQty : ""}
-                                                        </td>
-                                                    )
-                                                })
-                                            }
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="border border-gray-400 px-4 py-2 text-center text-red-600"
-                                        >
-                                            ไม่พบข้อมูล ติดต่อคุณวรกานต์(เมย์) เบอร์ 208
-                                        </td>
-                                    </tr>
-
-                                )}
-
-                            </tbody>
-
-                        </table>
-                    </div>
-                </body>
-                <ToastContainer
-                    position="top-right"
-                    autoClose={3000}
-                    hideProgressBar={false}
-                    newestOnTop
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable={false}
-                    pauseOnHover={false}
-                    theme="light"
-                />
             </head>
+            <body className="">
+                {!isLoad ?
+                    (
+                        <>
+                            <div className="flex flex-row gap-3 justify-end mr-5">
+                                <div id="clear" className="">
+                                    <button onClick={() => navigate(`/summerizegoods`)} className="text-[#003092] border-2 border-[#003092] bg-white hover:bg-[#003092] hover:text-white focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg  px-5 py-2  text-center ">
+                                        <ProfileTwoTone className="mr-3" />
+                                        หน้าสรุปรายการ
+                                    </button>
+                                    <button
+                                        onClick={handleSubmit}
+                                        className="text-white bg-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-lg ml-10 px-5 py-2 text-center dark:bg-green-900 dark:hover:bg-green-900 dark:focus:ring-green-900">
+                                        Save (บันทึกรายการ)
+                                    </button>
+                                </div>
+                            </div>
+                            {/* Table */}
+                            <div className="overflow-x-auto p-4">
+                                <table className="border-collapse border border-gray-600 w-full">
+                                    {/* Header */}
+                                    <thead>
+                                        <tr className="bg-[#F9F5EB]">
+                                            <th className="border border-gray-600 px-4 py-2" rowSpan={3}>จำนวน Part ประกอบ</th>
+                                            <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Drawing</th>
+                                            <th className="border border-gray-600 px-4 py-2" rowSpan={3}>CM</th>
+                                            <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Part Name</th>
+                                            <th className="border border-gray-600 px-4 py-2" rowSpan={2}>Qty Total</th>
+                                            <th className="border border-gray-600 px-4 py-2" colSpan={ProcessParts.length}>Process</th>
+                                        </tr>
+                                        <tr className="bg-[#F9F5EB]">
+                                            {ProcessParts.map((oItem: PropPartUsed, i: number) => (
+                                                <th key={i} className="border border-gray-600 px-2 py-1 text-center text-sm">
+                                                    {i + 1} - {oItem.procName}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                        <tr className="bg-[#F9F5EB]">
+                                            <th className="border border-gray-600 px-4 py-2">{headerSum}</th>
+                                            {ProcessParts.map((oItem: PropPartUsed, idx: number) => (
+                                                <th key={idx} className="border border-gray-600 px-2 py-2 text-center">
+                                                    <Input
+                                                        type="text"
+                                                        className="bg-[#fbf6c0]"
+                                                        data-process={oItem.procCode}
+                                                        data-partno={oItem.partNo}
+                                                        data-cm={oItem.cm}
+                                                        value={headerValues[idx]}
+                                                        onChange={(e) => handleChange(idx, oItem.procCode, e)}
+                                                    />
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+
+
+                                    {/* Body */}
+                                    <tbody>
+                                        {tableData.length > 0 ? (
+                                            tableData.map((row, rowIndex) => (
+                                                <tr key={rowIndex} className="hover:bg-gray-100">
+                                                    <td className="border border-gray-600 px-4 py-2 text-center">{row.usageQty}</td>
+                                                    <td className="border border-gray-600 px-4 py-4 w-30 whitespace-nowrap">{row.partNo}</td>
+                                                    <td className="border border-gray-600 px-4 py-4 w-20">{row.cm}</td>
+                                                    <td className="border border-gray-600 px-4 py-4 w-60">{row.partName}</td>
+                                                    <td className="border border-gray-600 px-4 py-2 text-center">
+                                                        {
+                                                            ProcessParts.reduce((total, oItem) => {
+                                                                const oDatas = Array.isArray(oPartList)
+                                                                    ? oPartList.filter((c) =>
+                                                                        c.wcno === row.wcno &&
+                                                                        c.model === row.model &&
+                                                                        c.proc_Code === oItem.procCode &&
+                                                                        c.partNo === row.partNo &&
+                                                                        c.cm === row.cm
+                                                                    )
+                                                                    : [];
+                                                                return total + oDatas.reduce((sum, item) => sum + (item.calQty || 0), 0);
+                                                            }, 0).toFixed(4)
+                                                        }
+                                                    </td>
+                                                    {
+                                                        ProcessParts.map((oItem: PropPartUsed, idx: number) => {
+                                                            const oDatas: PartListQtyInfo[] = Array.isArray(oPartList) ? oPartList.filter((c) => c.wcno === row.wcno
+                                                                && c.model === row.model && c.proc_Code === oItem.procCode
+                                                                && c.partNo === row.partNo && c.cm === row.cm) : [];
+                                                            return (
+                                                                <td key={idx} className="border border-gray-600 text-center">
+                                                                    <div
+                                                                        className={`w-full h-full text-center mt-1 ${oDatas.length > 0 ? "bg-green-500" : "bg-white"}`}
+                                                                    />
+                                                                    {oDatas.length > 0 ? oDatas[0].calQty : ""}
+                                                                </td>
+                                                            )
+                                                        })
+                                                    }
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan={6}
+                                                    className="border border-gray-400 px-4 py-2 text-center text-red-600"
+                                                >
+                                                    ไม่พบข้อมูล ติดต่อคุณวรกานต์(เมย์) เบอร์ 208
+                                                </td>
+                                            </tr>
+
+                                        )}
+
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </>
+
+                    ) : (
+                        <div className="item-center justify-center text-center">
+                            <CircularProgress />
+                        </div>
+                    )
+
+                }
+
+            </body>
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable={false}
+                pauseOnHover={false}
+                theme="light"
+            />
+
         </>
 
 
     )
 }
 
-export default AuditorFill
+export default AuditeeFill

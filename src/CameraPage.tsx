@@ -1,7 +1,7 @@
 //@ts-nocheck
 import { useEffect, useRef, useState } from 'react'
 import CameraScanner from './Camera';
-import { API_TAG_RECORD_AUDITEE, API_TEG_SELECT_QR } from './service/gentag.service';
+import { API_TAG_RECORD_AUDITEE, API_TEG_SELECT_QR } from './service/tag.service';
 import { useSelector } from 'react-redux';
 import { ReduxInterface } from './interface/main.interface';
 import { Alert, Button, Input, InputRef } from 'antd';

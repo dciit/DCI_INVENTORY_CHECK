@@ -1,15 +1,14 @@
 // import { base } from "@/constants";
 // import { Wcno } from "@/interface/compressorcheck";
 // import { DataTag } from "@/interface/gentag.interface";
-import { base } from "@/constants";
+import Navbar from "@/components/main/navbar";
 import { ReduxInterface } from "@/interface/main.interface";
 import { CompareSum, SummatyTagCheckADTE } from "@/interface/summarypart.interface";
 import { API_SUMMARY_COMPARE, API_TEG_SUMCHECK_ADTE } from "@/service/conclusion.service";
-import { API_TEG_SELECT } from "@/service/gentag.service";
-import { HomeOutlined } from "@ant-design/icons";
+import { API_TEG_SELECT } from "@/service/tag.service";
 // import { API_SELECT_WCNO } from "@/service/partlist.service";
 import { Table } from "antd";
-import { Footer } from "antd/es/layout/layout";
+// import { Footer } from "antd/es/layout/layout";
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -134,10 +133,12 @@ function CompareSummary() {
 
     const columns = [
         {
-            title: "Factory",
+            title: 'Factory',
+            // <span style={{ backgroundColor: "yellow", display: "block", padding: "15px" }}>Factory</span>
             dataIndex: "factory",
             key: "factory",
             align: "center" as "center",
+            width: 90,
             filters: [
                 { text: "Fac1", value: "FAC1" },
                 { text: "Fac2", value: "FAC2" },
@@ -145,6 +146,7 @@ function CompareSummary() {
                 { text: "ODM", value: "ODM" },
             ],
             onFilter: (value: any, record: { factory: any; }) => record.factory === value,
+            
         },
         {
             title: "Product",
@@ -212,7 +214,7 @@ function CompareSummary() {
                     </>
                 );
             },
-        },        
+        },
         {
             title: 'BOOK A',
             children: [
@@ -310,37 +312,41 @@ function CompareSummary() {
 
 
     return (
-        <head className="flex flex-col px-8 py-8">
-            <div className="flex flex-row justify-center items-cente">
-                <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#E1EACD] text-3xl text-black font-bold text-center">
-                    รายการนับวัตถุดิบของแต่ละสายการผลิต
-                    <hr className="mx-28 mt-2  border-black" />
-                    <p className=" mt-2 text-2xl font-light">(Auditee)</p>
-                </p>
-            </div>
-            <div className="flex flex-row gap-3 justify-start mr-5">
-                <div id="clear" className="mt-9 ml-5">
-                    <a
-                        href={`/${base}/home`}
-                        className="text-white bg-[#003092] hover:bg-[#003092]  focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center  dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
-                        <HomeOutlined />
-                    </a>
+        <>
+            <Navbar />
+            <head className="flex flex-col px-8 py-8">
+                <div className="flex flex-row justify-center items-cente">
+                    <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#E1EACD] text-3xl text-black font-bold text-center">
+                        รายการนับวัตถุดิบของแต่ละสายการผลิต
+                        <hr className="mx-28 mt-2  border-black" />
+                        <p className=" mt-2 text-2xl font-light">(Auditee)</p>
+                    </p>
                 </div>
-            </div>
-            <body className="flex w-full p-4 justify-center">
-                <Table
-                    columns={columns}
-                    dataSource={data}
-                    rowKey={(record) => record.key || record.wcno}
-                    onRow={(record) => ({
-                        onClick: () => handleRowClick(record.wcno),
-                    })}
-                    pagination={false}
-                    bordered
-                    scroll={{ y: 600 }}
-                />
-            </body>
-        </head>
+                {/* <div className="flex flex-row gap-3 justify-start mr-5">
+                    <div id="clear" className="mt-9 ml-5">
+                        <a
+                            href={`/${base}/home`}
+                            className="text-white bg-[#003092] hover:bg-[#003092]  focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center  dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
+                            <HomeOutlined />
+                        </a>
+                    </div>
+                </div> */}
+                <body className="flex w-full p-4 justify-center">
+                    <Table
+                        columns={columns}
+                        dataSource={data}
+                        rowKey={(record) => record.key || record.wcno}
+                        onRow={(record) => ({
+                            onClick: () => handleRowClick(record.wcno),
+                        })}
+                        pagination={false}
+                        bordered
+                        scroll={{ y: 600 }}
+                    />
+                </body>
+            </head>
+        </>
+
 
 
     )

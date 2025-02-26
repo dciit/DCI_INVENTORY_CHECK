@@ -47,7 +47,10 @@ export interface SummatyTagCheckADTE {
     tagCountMainAuditor: number;
     tagCountFinal: number;
     tagCountFinalAuditee: number;
-    tagCountFinalAuditor: number
+    tagCountFinalAuditor: number;
+    tagCountExplode: number;
+    tagCountExplodeAuditee: number;
+    tagCountExplodeAuditor: number;
 }
 
 export interface FacData {

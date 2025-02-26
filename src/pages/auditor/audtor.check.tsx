@@ -4,17 +4,16 @@ import { API_PARTLIST_CHECK_INVENTORY, API_SELECT_MODELLIST, API_SELECT_WCNO } f
 import { ClearOutlined, HomeOutlined, SearchOutlined } from "@ant-design/icons";
 import { Alert, Button, Input, RefSelectProps, Select } from "antd"
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import "../index.css";
-import "../assets/fonts/Nunito/Nunito-Regular.ttf"
+import "../../index.css";
+import "../../assets/fonts/Nunito/Nunito-Regular.ttf"
 import { API_EXPORTPARTLIST_SELECT, API_SAVE_INFO_INVENTORY } from "@/service/invsave.service";
 import { useSelector } from "react-redux";
 import { ReduxInterface } from "@/interface/main.interface";
 import { toast, ToastContainer } from "react-toastify";
 import Navbar from "@/components/main/navbar";
-import { base } from "@/constants";
 
 
-function AuditeeFill() {
+function AuditorFill() {
 
     const redux: ReduxInterface = useSelector((state: any) => state.reducer)
 
@@ -355,13 +354,12 @@ function AuditeeFill() {
 
                 <body className="mt-10">
 
-                    <div className="flex flex-row gap-3 justify-start mr-5">
-                        <div id="clear" className="mt-9 ml-5">
-                            <a
-                                href={`/${base}/home`}
-                                className="text-white bg-[#003092] hover:bg-[#003092]  focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center  dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
+                    <div className="flex flex-row gap-3 justify-end mr-5">
+                        <div id="clear" className="mt-7">
+                            <button
+                                className="text-white bg-[#B8001F] hover:bg-[#B8001F]  focus:outline-none focus:ring-rose-700 font-medium rounded-lg text-lg px-5 py-2 text-center  dark:bg-rose-900 dark:hover:bg-rose-900 dark:focus:ring-rose-900">
                                 <HomeOutlined />
-                            </a>
+                            </button>
                         </div>
                         <div id="save" className="mt-7">
                             <button
@@ -371,7 +369,6 @@ function AuditeeFill() {
                             </button>
                         </div>
                     </div>
-                    {/* <a href="/template/summerizegoods" className="text-blue-700 underline text-xl font-normal ml-5">Summary Part</a> */}
                     {/* Table */}
                     <div className="overflow-x-auto p-4">
                         <table className="border-collapse border border-gray-600 w-full">
@@ -489,4 +486,4 @@ function AuditeeFill() {
     )
 }
 
-export default AuditeeFill
+export default AuditorFill

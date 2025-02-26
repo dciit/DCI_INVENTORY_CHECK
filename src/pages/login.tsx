@@ -2,7 +2,7 @@ import { LoginData, LoginInterface } from '@/interface/login.interface';
 import imgCheck from "../assets/checkstock-removebg-preview.png"
 import { API_LOGIN_EMPLOYEE } from '@/service/login.service';
 import { useEffect, useRef, useState } from 'react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 // import { useNavigate } from 'react-router-dom';
 import { Button, Input, InputRef } from 'antd';
 import {
@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { ReduxInterface } from '@/interface/main.interface';
 
 
 function Login() {
@@ -40,6 +41,30 @@ function Login() {
     toast.success(`Ok : ${msg}`);
   };
 
+
+  const [isInitial, setisInitial] = useState<boolean>(false);
+  const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
+
+  useEffect(() => {
+
+    if (!isInitial) {
+      if (oAccount != null) {
+        if (oAccount.authen.role === "ADMIN") {
+          navigate('/home');
+        } else if (oAccount.authen.role === "AUDITEE") {
+          navigate('/home');
+        } else if (oAccount.authen.role === "AUDITOR") {
+          navigate('/home');
+        } else {
+          navigate(`/login`);
+        }
+      } else {
+        navigate(`/login`);
+      }
+      setisInitial(true);
+    }
+  }, []);
+
   async function handleLogin() {
     if (loginData.ParamUser == '' || loginData.ParamPass == '') {
       if (loginData.ParamUser == '') {
@@ -58,15 +83,15 @@ function Login() {
     if (loginData.ParamUser != '' && loginData.ParamPass != '') {
 
 
-      const oRole = ['ADMIN','AUDITEE','AUDITOR'];
+      const oRole = ['ADMIN', 'AUDITEE', 'AUDITOR'];
       let resLogin = await API_LOGIN_EMPLOYEE(loginData.ParamUser, loginData.ParamPass);
-      
+
       if (resLogin != null) {
-        if(resLogin.code == null){
+        if (resLogin.code == null) {
           notifyErr('ไม่สามารถเข้าสู่ระบบได้ เนื่องจากรหัสพนักงานนี้ ไม่ถูกต้อง')
           return false;
         }
-        if(resLogin.role == null){
+        if (resLogin.role == null) {
           notifyErr('ไม่สามารถเข้าสู่ระบบได้ เนื่องจาก Role ไม่ถูกต้อง')
           return false;
         }
@@ -94,6 +119,8 @@ function Login() {
     }
 
   }
+
+
 
   useEffect(() => {
     if (login.login == true) {
@@ -169,19 +196,19 @@ function Login() {
           </div>
         </div>
       </div>
-  <ToastContainer
-    position="top-right"
-    autoClose={3000}
-    hideProgressBar={false}
-    newestOnTop
-    closeOnClick
-    rtl={false}
-    pauseOnFocusLoss
-    draggable={false}
-    pauseOnHover={false}
-    theme="light"
-  />
-</div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable={false}
+        pauseOnHover={false}
+        theme="light"
+      />
+    </div>
   )
 }
 
