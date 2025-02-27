@@ -2,20 +2,27 @@
 // import { TagInfo } from "@/interface/gentag.interface";
 import Navbar from "@/components/main/navbar";
 import { ReduxInterface } from "@/interface/main.interface";
-import { FacData, SummatyTagCheckADTE } from "@/interface/summarypart.interface"
+import { DataType, FacData, SummatyTagCheckADTE } from "@/interface/summarypart.interface"
 import { API_TEG_SUMCHECK_ADTE } from "@/service/conclusion.service";
 import { API_TEG_SELECT } from "@/service/tag.service";
-import { Button, RefSelectProps, Select } from "antd";
+import { Button, RefSelectProps, Select, Table } from "antd";
 import { useEffect, useRef, useState } from "react"
 import { TbReportSearch } from "react-icons/tb";
 import { useSelector } from "react-redux";
 import DetailSumAuditee from "./detailsum.auditee";
+import { CircularProgress } from "@mui/material";
+interface PropSummary {
+    tag: number;
+    tagCount: number;
+}
 
 function FinalSumAuditee() {
-
+    const [summary, setSummary] = useState<PropSummary>({
+        tag: 0, tagCount: 9999
+    })
     const oAccount: ReduxInterface = useSelector((state: any) => state.reducer)
 
-    const [stagCheck, setTagCheck] = useState<SummatyTagCheckADTE[]>([])
+    const [tagCheck, setTagCheck] = useState<SummatyTagCheckADTE[]>([])
     const [factory, setFactoryData] = useState<String[]>([]);
 
     const [searchData, setSearchData] = useState<FacData>({
@@ -27,48 +34,169 @@ function FinalSumAuditee() {
 
     const [isModalPart, setIsModalPart] = useState<boolean>(false);
     const [TagData, setTagData] = useState<any[]>([]);
-
-
+    const [loading, setLoading] = useState<boolean>(true);
+    let once: boolean = true;
     const fetchCheckTag = async () => {
         try {
-            const checktag = await API_TEG_SUMCHECK_ADTE(
+            let checktag = await API_TEG_SUMCHECK_ADTE(
                 oAccount.authen.mSetInfo?.setCode!,
                 oAccount.authen.sName!,
                 oAccount.authen.mSetInfo?.ym!
             );
+            let clone: DataType[] = checktag.filter((row: DataType) => row.factory && (row.factory.startsWith("FAC") || row.factory.startsWith("ODM")) && row.wcno.toString().startsWith("90"))
+            clone.map((row: DataType) => {
+                oLineTyps.map((oLine: string) => {
+                    let rename: string = '';
+                    let tagCount: number = 0;
+                    let tagCountAuditee: number = 0;
+                    if (oLine == 'MAIN') {
+                        rename = `MAIN ASSEMBLY LINE ${row.wcno.toString().substring(2, 3)}`
+                        tagCount = row.tagCountMain;
+                        tagCountAuditee = row.tagCountMainAuditee;
+                    } else if (oLine == 'FINAL') {
+                        rename = `FINAL LINE ${row.wcno.toString().substring(2, 3)}`
+                        tagCount = row.tagCountFinal;
+                        tagCountAuditee = row.tagCountFinalAuditee;
+                    } else {
+                        rename = `แตก Part LINE ${row.wcno.toString().substring(2, 3)}`;
+                        tagCount = row.tagCountExplode;
+                        tagCountAuditee = row.tagCountExplodeAuditee;
+                    }
+                    checktag.push({ factory: row.factory, product: row.product, wcno: row.wcno, wcnO_NAME: rename, tagCount: tagCount, tagCountAuditee: tagCountAuditee })
+                })
+            })
 
             if (checktag && Array.isArray(checktag)) {
                 setTagCheck(checktag);
 
                 const uniqueFactories = Array.from(new Set(checktag.map((item) => item.factory)));
                 setFactoryData(uniqueFactories);
-                // console.log(uniqueFactories);
 
             } else {
-                // console.error("Invalid data format:", checktag);
             }
         } catch (error) {
-            // console.error("Error fetching check tag:", error);
         }
     };
-
+    useEffect(() => {
+        let tagSum: number = tagCheck.reduce((sum, item) => sum + item.tagCount, 0)
+        let tagCountSum: number = tagCheck.reduce((sum, item) => sum + item.tagCountAuditee, 0)
+        setSummary({ tag: tagSum, tagCount: tagCountSum })
+    }, [tagCheck])
+    useEffect(() => {
+        if (once) {
+            setLoading(false);
+            once = !once;
+        }
+    }, [factory])
 
     const handleModalPart = async (data: SummatyTagCheckADTE) => {
         setTagData([]);
+        setIsModalPart(true);
         const resTagData = await API_TEG_SELECT(
             oAccount.authen.mSetInfo?.setCode!,
             oAccount.authen.mSetInfo?.ym!,
             data.wcno
         );
         setTagData(resTagData);
-        setIsModalPart(true);
     }
 
-
+    interface PropFilter {
+        text: string;
+        value: string;
+    }
+    const CreateFilterChoice = (data: any[], key: string | number) => {
+        let resChoice: PropFilter[] = [];
+        [...new Set([...data.map((x: any) => x[key.toString()])])].map(n => {
+            resChoice.push({ text: n, value: n })
+        })
+        return resChoice
+    }
 
     useEffect(() => {
         fetchCheckTag();
     }, []);
+    const columns = [
+        {
+            title: 'Factory',
+            dataIndex: 'factory',
+            key: 'factory',
+
+        },
+        {
+            title: 'Product',
+            dataIndex: 'product',
+            key: 'product',
+            sorter: (a: any, b: any) => a.product.length - b.product.length,
+        },
+        {
+            title: 'WC',
+            dataIndex: 'wcno',
+            key: 'wcno',
+            filters: CreateFilterChoice(tagCheck, 'wcno'),
+            onFilter: (value: any, record: any) => record.wcno.indexOf(value as string) === 0,
+        },
+        {
+            title: 'LineName',
+            dataIndex: 'wcnO_NAME',
+            key: 'wcnO_NAME',
+        },
+        {
+            title: 'Auditee Check',
+            children: [
+                {
+                    title: "จำนวนที่ปริ๊นท์ ",
+                    dataIndex: 'tagCount',
+                    key: "tagCount",
+                    align: 'right' as 'right',
+                    sorter: (a: any, b: any) => a.tagCount - b.tagCount,
+                    render: (_text: any, row: { tagCount: number, tagCountAuditee: number }) => {
+                        return <span className={`font-semibold text-sky-600 `}>{row.tagCount}</span>;
+                    },
+                },
+                {
+                    title: "จำนวนที่นับได้  ",
+                    dataIndex: 'tagCountAuditee',
+                    key: "tagCountAuditee",
+                    align: 'right' as 'right',
+                    filters: [
+                        { text: 'ครบแล้ว', value: 'COMPLETED' },
+                        { text: 'ยังไม่ครบ', value: 'NOT-COMPLETED' },
+                    ],
+                    onFilter: (value: any, record: any) => value == 'COMPLETED' ? record.tagCountAuditee == record.tagCount : record.tagCountAuditee != record.tagCount,
+                    render: (_text: any, row: { tagCount: number, tagCountAuditee: number }) => {
+                        return <span className={`font-semibold ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>{row.tagCountAuditee}</span>;
+                    },
+                },
+                {
+                    title: "จำนวนคงเหลือ",
+                    dataIndex: 'tagCount',
+                    key: "tagCount",
+                    align: 'right' as 'right',
+                    sorter: (a: any, b: any) => (a.tagCount - a.tagCountAuditee) - (b.tagCount - b.tagCountAuditee),
+                    render: (_text: any, row: { tagCount: number, tagCountAuditee: number }) => {
+                        return <span className={`font-semibold ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>{row.tagCount - row.tagCountAuditee}</span>;
+                    },
+                }
+            ]
+        },
+        {
+            title: 'Completed',
+            align: 'right' as 'right',
+            render: (_text: any, row: SummatyTagCheckADTE) => {
+                return <div className='flex items-center justify-between text-right'>
+                    <span className={`font-semibold text-right ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>{row.tagCount > 0 ? ((row.tagCountAuditee / row.tagCount) * 100).toFixed(1) + "%" : "0%"}</span>
+                    <Button type="primary" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
+                        แสดงรายการ</Button>
+                </div>;
+            },
+        },
+    ];
+
+    // const sumTagQty = checktag.reduce((sum: any, item: any) => sum + (item.tagCount || 0), 0);
+    // const sumTagCountAdt = checktag.reduce((sum: any, item: any) => sum + (item.tagCountAuditee || 0), 0);
+    // const sumTagCountAdtrm = checktag.reduce((sum: any, item: any) =>
+    //     sum + ((item.tagCount || 0) - (item.tagCountAuditee || 0)), 0
+    // );
 
 
 
@@ -97,205 +225,36 @@ function FinalSumAuditee() {
                 </div>
             </head>
             <body className="flex w-full p-4 justify-center">
-                <div className="overflow-x-auto max-h-[600px] mx-4">
-                    <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
-                        <thead>
-                            <tr className="bg-[#F9F5EB]">
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-32" rowSpan={2}>Factory</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-32" rowSpan={2}>Procuct</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-28" rowSpan={2}>WC</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-80" rowSpan={2}>Line Name</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" colSpan={3}>Auditee Check</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" rowSpan={2}>Completed</th>
-                            </tr>
-                            <tr className="bg-[#F9F5EB]">
-                                <th className="border border-gray-600 sticky top-[42px] bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนที่ปริ๊นท์</th>
-                                <th className="border border-gray-600 sticky top-[42px] bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนที่นับได้</th>
-                                <th className="border border-gray-600 sticky top-[42px] bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนคงเหลือ</th>
-                            </tr>
-                        </thead>
 
-                        <tbody>
-                            {stagCheck
-                                .filter((row) => row.factory && (row.factory.startsWith("FAC") || row.factory.startsWith("ODM")) && !row.wcno.startsWith("90"))
-                                .filter((row) => !searchData.factory || row.factory === searchData.factory)
-                                .map((row, rowIndex) => (
-                                    <tr key={rowIndex} style={{ cursor: "pointer" }}
-                                        className="dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{row.factory}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{row.product}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{row.wcno}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-left">{row.wcnO_NAME}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-right">{row.tagCount}</td>
-                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                        ${row.tagCount === row.tagCountAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                            {row.tagCountAuditee}
-                                        </td>
+                {
+                    loading ? <div><CircularProgress /></div> : <div className='w-[100%] px-[5%]'>
+                        <Table
+                            style={{ width: "100%" }}
+                            className="border"
+                            dataSource={tagCheck.filter(row => !row.wcnO_NAME.includes('MAIN ASSEMBLY AND FINAL'))}
+                            columns={columns}
+                            summary={() => {
+                                return <Table.Summary.Row className="font-bold">
+                                    <Table.Summary.Cell colSpan={4} index={0} className="text-right">
+                                        Total
+                                    </Table.Summary.Cell>
+                                    <Table.Summary.Cell index={0} className="text-right">
+                                        {summary.tag.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </Table.Summary.Cell>
+                                    <Table.Summary.Cell index={0} className="text-right">
+                                        {summary.tagCount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </Table.Summary.Cell>
+                                    <Table.Summary.Cell index={0} className="text-right">
+                                        {/* {sumTagCountAdtrm.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} */}
+                                    </Table.Summary.Cell>
 
-                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                        ${row.tagCount === row.tagCountAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                            {row.tagCount - row.tagCountAuditee}
-                                        </td>
-                                        <td className={`border border-gray-600 px-4 py-2 text-right ${row.tagCount === row.tagCountAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                            {row.tagCount > 0 ? ((row.tagCountAuditee / row.tagCount) * 100).toFixed(1) + "%" : "0%"}
-                                            <Button type="primary" className="mr-5" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
-                                                แสดงรายการ</Button>
-                                        </td>
-                                    </tr>
-                                ))}
-
-                            {stagCheck
-                                .filter((row) => row.factory && (row.factory.startsWith("FAC") || row.factory.startsWith("ODM")) && row.wcno.startsWith("90"))
-                                .filter((row) => !searchData.factory || row.factory === searchData.factory)
-                                .map((row, rowIndex) => (
-                                    oLineTyps.map((ln) => (
-
-                                        <tr key={rowIndex} style={{ cursor: "pointer" }}
-                                            className="dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                            <td className="border border-gray-600 px-4 py-2 text-center">{row.factory}</td>
-                                            <td className="border border-gray-600 px-4 py-2 text-center">{row.product}</td>
-                                            <td className="border border-gray-600 px-4 py-2 text-center">{row.wcno}</td>
-                                            {
-                                                (ln == "MAIN") ?
-
-                                                    (<>
-                                                        <td className="border border-gray-600 px-4 py-2 text-leff whitespace-nowrap">
-                                                            MAIN ASSEMBLY LINE {row.wcno.substring(2, 3)}
-                                                        </td>
-                                                        <td className="border border-gray-600 px-4 py-2 text-right">
-                                                            {row.tagCountMain}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                                    ${row.tagCountMain === row.tagCountMainAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountMainAuditee}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                                    ${row.tagCountMain === row.tagCountMainAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountMain - row.tagCountMainAuditee}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right ${row.tagCountMain === row.tagCountMainAuditee ? "text-green-600 " : " text-red-500 "} `}>
-                                                            {row.tagCountMain > 0 ? ((row.tagCountMainAuditee / row.tagCountMain) * 100).toFixed(1) + "%" : "0%"}
-                                                            <Button type="primary" className="mr-5" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
-                                                                แสดงรายการ</Button>
-                                                        </td>
-
-
-                                                    </>)
-
-                                                    : (ln == "FINAL") ? <>
-                                                        <td className="border border-gray-600 px-4 py-2 text-left whitespace-nowrap">
-                                                            FINAL LINE {row.wcno.substring(2, 3)}
-                                                        </td>
-                                                        <td className="border border-gray-600 px-4 py-2 text-right">
-                                                            {row.tagCountFinal}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                                    ${row.tagCountFinal === row.tagCountFinalAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountFinalAuditee}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                                    ${row.tagCountFinal === row.tagCountFinalAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountFinal - row.tagCountFinalAuditee}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right ${row.tagCountFinal === row.tagCountFinalAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountFinal > 0 ? ((row.tagCountFinalAuditee / row.tagCountFinal) * 100).toFixed(1) + "%" : "0%"}
-                                                            <Button type="primary" className="mr-5" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
-                                                                แสดงรายการ</Button>
-                                                        </td>
-                                                    </> : <>
-                                                        <td className="border border-gray-600 px-4 py-2 text-left whitespace-nowrap">
-                                                            แตก Part LINE {row.wcno.substring(2, 3)}
-                                                        </td>
-                                                        <td className="border border-gray-600 px-4 py-2 text-right">
-                                                            {row.tagCountExplode}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                                    ${row.tagCountExplode === row.tagCountExplodeAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountExplodeAuditee}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right 
-                                                    ${row.tagCountExplode === row.tagCountExplodeAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountExplode - row.tagCountExplodeAuditee}
-                                                        </td>
-                                                        <td className={`border border-gray-600 px-4 py-2 text-right ${row.tagCountExplode === row.tagCountExplodeAuditee ? "text-green-600 " : " text-red-500 "}`}>
-                                                            {row.tagCountExplode > 0 ? ((row.tagCountExplodeAuditee / row.tagCountExplode) * 100).toFixed(1) + "%" : "0%"}
-                                                            <Button type="primary" className="mr-5" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
-                                                                แสดงรายการ</Button>
-                                                        </td>
-                                                    </>
-
-
-                                            }
-
-                                        </tr>
-                                    ))
-                                ))}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colSpan={4} className="border border-gray-600 text-right p-4 py-2 font-bold">Total:</td>
-                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
-                                    {new Intl.NumberFormat().format(
-                                        stagCheck.reduce((total: any, item: any) => {
-                                            return (
-                                                total +
-                                                (item.tagCount) +
-                                                (item.tagCountMain) +
-                                                (item.tagCountFinal) +
-                                                (item.tagCountExplode)
-                                            );
-                                        }, 0)
-                                    )}
-                                </td>
-                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
-                                    {new Intl.NumberFormat().format(
-                                        stagCheck.reduce((total: any, item: { wcno: any; }) => {
-                                            const sumItem = stagCheck?.find((s: any) => s.wcno === item.wcno);
-                                            return total + (sumItem?.tagCountAuditee || 0);
-                                        }, 0)
-                                    )}
-                                </td>
-                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
-                                    {new Intl.NumberFormat().format(
-                                        stagCheck.reduce((total: number, item: any) => {
-                                            return (
-                                                total +
-                                                (item.tagCount - item.tagCountAuditee) +
-                                                (item.tagCountMain - item.tagCountMainAuditee) +
-                                                (item.tagCountFinal - item.tagCountFinalAuditee) +
-                                                (item.tagCountExplode - item.tagCountExplodeAuditee)
-                                            );
-                                        }, 0)
-                                    )}
-                                </td>
-
-                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
-                                    {(() => {
-                                        const totalTagCount =
-                                            stagCheck.reduce((sum: number, item: any) =>
-                                                sum + item.tagCount + item.tagCountMain + item.tagCountFinal + item.tagCountExplode, 0);
-
-                                        const totalAuditeeCount =
-                                            stagCheck.reduce((sum: number, item: any) =>
-                                                sum + item.tagCountAuditee + item.tagCountMainAuditee + item.tagCountFinalAuditee + item.tagCountExplodeAuditee, 0);
-
-                                        const overallPercentage = totalTagCount > 0 ? (totalAuditeeCount / totalTagCount) * 100 : 0;
-
-                                        return overallPercentage.toFixed(1) + "%";
-                                    })()}
-                                </td>
-
-
-
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                                </Table.Summary.Row>
+                            }}
+                        />
+                    </div>
+                }
 
             </body>
-
-
-
             <DetailSumAuditee open={isModalPart} close={setIsModalPart} tagData={TagData} />
         </>
 
@@ -305,5 +264,3 @@ function FinalSumAuditee() {
 }
 
 export default FinalSumAuditee
-
-

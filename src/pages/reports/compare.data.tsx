@@ -1,33 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Table } from 'antd';
+import { useEffect, useState } from 'react';
+import { Button, Table } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { CompareSum } from '@/interface/summarypart.interface';
-
-interface DataType {
-    key: React.Key;
-    ivSetCode: string;
-    wcno: number;
-    wcnO_SName: string;
-    wcnO_NAME: string;
-    grpCode: string;
-    factory: string;
-    product: string;
-    lineType: string;
-    lineSub: string;
-    kind: string;
-    tagCount: number;
-    tagCountAuditee: number;
-    tagCountAuditor: number;
-    tagCountMain: number;
-    tagCountMainAuditee: number;
-    tagCountMainAuditor: number;
-    tagCountFinal: number;
-    tagCountFinalAuditee: number;
-    tagCountFinalAuditor: number;
-    tagCountExplode: number;
-    tagCountExplodeAuditee: number;
-    tagCountExplodeAuditor: number;
-}
+import { CompareSum, DataType } from '@/interface/summarypart.interface';
+import { ReduxInterface } from '@/interface/main.interface';
+import { useSelector } from 'react-redux';
+import { API_SUMMARY_COMPARE } from '@/service/conclusion.service';
+import DetailCompareSum from './detailcomparesum';
 
 
 interface PropFilter {
@@ -48,8 +26,29 @@ const CreateFilterChoice = (data: DataType[], key: string | number) => {
     })
     return resChoice
 }
+
+
 const ViewCompareSum = (props: ParamCompareSum) => {
     const { data, tagCompare } = props;
+
+    const oAccount: ReduxInterface = useSelector((state: any) => state.reducer)
+
+    const [SumcompareData, setSumcompareData] = useState<CompareSum[]>([]);
+    const [isModalPart, setIsModalPart] = useState<boolean>(false);
+
+    const handleModelPart = async (wcno: number) => {
+        
+        setSumcompareData([])
+        setIsModalPart(true);
+ 
+        const ressumcompare = await API_SUMMARY_COMPARE(
+            oAccount.authen.mSetInfo?.setCode!,
+            oAccount.authen.mSetInfo?.ym!,
+            wcno.toString()
+        ); 
+        setSumcompareData(ressumcompare)
+ 
+    };
 
 
     const [columns, setColumn] = useState<TableColumnsType<DataType>>([])
@@ -61,6 +60,7 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                     dataIndex: 'factory',
                     showSorterTooltip: { target: 'full-header' },
                     width: 120,
+                    className: 'text-lg',
                     filters: CreateFilterChoice(data, 'factory'),
                     onFilter: (value, record) => record.factory.indexOf(value as string) === 0,
                     sorter: (a, b) => a.factory.length - b.factory.length
@@ -69,15 +69,17 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                     title: "Product",
                     dataIndex: "product",
                     key: "product",
-                    align: 'center' as 'center',
+                    className: 'text-lg',
+                    align: 'left' as 'left',
                     filters: CreateFilterChoice(data, 'product'),
                     onFilter: (value, record) => record.product.indexOf(value as string) === 0
                 },
                 {
                     title: "WC",
                     dataIndex: "wcno",
+                    className: 'text-lg text-right',
                     key: "wcno",
-                    align: 'center' as 'center',
+                    align: 'right' as 'right',
                     filters: CreateFilterChoice(data, 'wcno'),
                     sorter: (a, b) => a.wcno - b.wcno,
                     onFilter: (value, record) => record.wcno.toString().indexOf(value as string) === 0
@@ -87,31 +89,33 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                     title: "Line Name",
                     dataIndex: "wcnO_NAME",
                     key: "wcnO_NAME",
-                    align: 'center' as 'center',
-                    width: 300,
+                    align: 'left' as 'left',
+                    className: 'text-lg',
+                    width: 400,
                     render: (_text: any, row: { wcno: number; lineType: string; wcnO_NAME: string; }) => {
                         if (row.wcno.toString().startsWith('90')) {
                             return (
                                 <>
                                     {row.lineType === "MAIN" ? (
-                                        <span>MAIN ASSEMBLY LINE {row.wcno.toString().substring(2, 3)}</span>
+                                        <span style={{ textAlign: "left" }}>MAIN ASSEMBLY LINE {row.wcno.toString().substring(2, 3)}</span>
                                     ) : row.lineType === "FINAL" ? (
                                         <span>FINAL LINE {row.wcno.toString().substring(2, 3)}</span>
                                     ) : (
                                         <span>EXPLODE LINE {row.wcno.toString().substring(2, 3)}</span>
                                     )}
                                 </>
-
                             );
                         } else {
-                            return <span>{row.wcnO_NAME}</span>
+                            return <span>{row.wcnO_NAME}</span>;
                         }
                     }
+
                 },
                 {
                     title: "Completed",
                     key: "completed",
-                    align: 'center' as 'center',
+                    align: 'right' as 'right',
+                    className: 'text-lg',
                     sorter: (a, b) => {
                         const getPercentage = (row: any) => {
                             if (row.lineType === "MAIN") {
@@ -129,7 +133,7 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                             <>
                                 <>
                                     {row.lineType === "MAIN" ? (
-                                        <span>
+                                        <span >
                                             {row.tagCountMain > 0
                                                 ? ((row.tagCountMainAuditee / row.tagCountMain) * 100).toFixed(1) + "%"
                                                 : "0%"}
@@ -158,89 +162,211 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                         {
                             title: "QTY",
                             key: "totalBookQty",
-                            align: 'center' as 'center',
+                            className: 'text-lg',
+                            align: 'right' as 'right',
                             render: (_text: any, row: { wcno: number; }) => {
                                 const compareRows: CompareSum[] = tagCompare.filter((compare: CompareSum) => compare.wcno == row.wcno);
                                 const totalBookQty = compareRows.reduce((sum, item) => sum + (item.bookQty || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalBookQty}</span>;
                             },
-                            // sorter: (a, b) => a.bookQty - b.bookQty,
+                            sorter: (a: DataType, b: DataType) => {
+                                const bookqtyA = tagCompare
+                                    .filter(compare => compare.wcno === a.wcno)
+                                    .reduce((sum, item) => sum + (item.bookQty || 0), 0);
+
+                                const bookqtyB = tagCompare
+                                    .filter(compare => compare.wcno === b.wcno)
+                                    .reduce((sum, item) => sum + (item.bookQty || 0), 0);
+
+                                return bookqtyA - bookqtyB;
+                            }
                         },
                         {
                             title: "AMOUNT",
                             key: "totalBookAmt",
-                            align: 'center' as 'center',
+                            className: 'text-lg',
+                            align: 'right' as 'right',
                             render: (_text: any, row: { wcno: number; }) => {
                                 const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
                                 const totalBookAmt = compareRows.reduce((sum, item) => sum + (item.bookAmt || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalBookAmt}</span>;
                             },
-                            // sorter: (a, b) => a.wcno - b.wcno,
+                            sorter: (a: DataType, b: DataType) => {
+                                const bookamtA = tagCompare
+                                    .filter(compare => compare.wcno === a.wcno)
+                                    .reduce((sum, item) => sum + (item.bookAmt || 0), 0);
+
+                                const bookamtB = tagCompare
+                                    .filter(compare => compare.wcno === b.wcno)
+                                    .reduce((sum, item) => sum + (item.bookAmt || 0), 0);
+
+                                return bookamtA - bookamtB
+                            }
                         },
                     ]
                 },
-
                 {
                     title: 'Auditee Check(B)',
                     children: [
                         {
                             title: "Aditee Qty",
                             key: "totalAuditeeQty",
-                            align: 'center' as 'center',
+                            className: 'text-lg',
+                            align: 'right' as 'right',
                             render: (_text: any, row: { wcno: number; }) => {
                                 const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
                                 const totalAuditeeQty = compareRows.reduce((sum, item) => sum + (item.auditeeQty || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalAuditeeQty}</span>;
                             },
+                            sorter: (a: DataType, b: DataType) => {
+                                const auditeeQtyA = tagCompare
+                                    .filter(compare => compare.wcno === a.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeQty || 0), 0);
+
+                                const auditeeQtyB = tagCompare
+                                    .filter(compare => compare.wcno === b.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeQty || 0), 0);
+
+                                return auditeeQtyA - auditeeQtyB
+                            }
                         },
                         {
                             title: "Auditee Amount",
                             key: "totalAuditeeAmt",
-                            align: 'center' as 'center',
+                            className: 'text-lg',
+                            align: 'right' as 'right',
                             render: (_text: any, row: { wcno: number; }) => {
                                 const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
                                 const totalAuditeeAmt = compareRows.reduce((sum, item) => sum + (item.auditeeAmt || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalAuditeeAmt}</span>;
                             },
+                            sorter: (a: DataType, b: DataType) => {
+                                const auditeeAmtA = tagCompare
+                                    .filter(compare => compare.wcno === a.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeAmt || 0), 0);
+
+                                const auditeeAmtB = tagCompare
+                                    .filter(compare => compare.wcno === b.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeAmt || 0), 0);
+
+                                return auditeeAmtA - auditeeAmtB
+                            }
                         },
                     ]
                 },
-
                 {
+
                     title: 'Diff.(B-A)',
                     children: [
                         {
                             title: "Aditee Diff Qty",
                             key: "totalAuditeeDiffQty",
-                            align: 'center' as 'center',
+                            className: 'text-lg',
+                            align: 'right' as 'right',
                             render: (_text: any, row: { wcno: number; }) => {
                                 const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
                                 const totalAuditeeDiffQty = compareRows.reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                 return <span>{totalAuditeeDiffQty}</span>;
                             },
+                            sorter: (a: DataType, b: DataType) => {
+                                const auditeeDiffQtyA = tagCompare
+                                    .filter(compare => compare.wcno === a.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0);
+
+                                const auditeeDiffQtyB = tagCompare
+                                    .filter(compare => compare.wcno === b.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0);
+
+                                return auditeeDiffQtyA - auditeeDiffQtyB
+                            }
                         },
                         {
                             title: "Aditee Diff Amount",
                             key: "totalAuditeeDiffAmt",
-                            align: 'center' as 'center',
+                            className: 'text-lg',
+                            align: 'right' as 'right',
                             render: (_text: any, row: { wcno: number; }) => {
                                 const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
                                 const totalAuditeeDiffAmt = compareRows.reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalAuditeeDiffAmt}</span>;
                             },
+                            sorter: (a: DataType, b: DataType) => {
+                                const auditeeDiffAmtA = tagCompare
+                                    .filter(compare => compare.wcno === a.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0);
+
+                                const auditeeDiffAmtB = tagCompare
+                                    .filter(compare => compare.wcno === b.wcno)
+                                    .reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0);
+
+                                return auditeeDiffAmtA - auditeeDiffAmtB
+                            }
                         },
                     ]
-                }
+                },
+                {
+                    title: 'operation',
+                    dataIndex: 'operation',
+                    render: (_text: any, row: { wcno: number; }) => {
+
+                        return (
+                            <Button type="primary" onClick={() => handleModelPart(row.wcno)}>
+                                ดูรายละเอียด
+                            </Button>
+                        );
+                    },
+
+                },
             ])
         }
     }, [data])
-    return <Table<DataType>
-        columns={columns}
-        dataSource={data}
-        showSorterTooltip={{ target: 'sorter-icon' }}
-        pagination={false}
-        scroll={{ y: 900 }}
-    />
+
+    const sumBookQty = tagCompare.reduce((sum: any, item: any) => sum + (item.bookQty || 0), 0);
+    const sumBookAmt = tagCompare.reduce((sum: any, item: any) => sum + (item.bookAmt || 0), 0);
+    const sumAuditeeQty = tagCompare.reduce((sum: any, item: any) => sum + (item.auditeeQty || 0), 0);
+    const sumAuditeeAmt = tagCompare.reduce((sum: any, item: any) => sum + (item.auditeeAmt || 0), 0);
+    const sumAuditeeDiffQty = tagCompare.reduce((sum: any, item: any) => sum + (item.auditeeDiffQty || 0), 0);
+    const sumAuditeeDiffAmt = tagCompare.reduce((sum: any, item: any) => sum + (item.auditeeDiffAmt || 0), 0);
+
+    return (<>
+        <Table<DataType>
+            className=' rounded-lg'
+            columns={columns}
+            dataSource={data}
+            showSorterTooltip={{ target: 'sorter-icon' }}
+            pagination={false}
+            scroll={{ y: 800 }}
+            summary={() => (
+                <Table.Summary.Row className='text-lg text-right font-bold'>
+                    <Table.Summary.Cell colSpan={4} index={0}  >
+                        Total
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell colSpan={1} index={0}  >
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={0} >
+                        {sumBookQty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={0} >
+                        {sumBookAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={0} >
+                        {sumAuditeeQty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={0} >
+                        {sumAuditeeAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={0} >
+                        {sumAuditeeDiffQty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={0} >
+                        {sumAuditeeDiffAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Table.Summary.Cell>
+                </Table.Summary.Row>
+            )}
+        />
+
+        <DetailCompareSum open={isModalPart} close={setIsModalPart} sumData={SumcompareData} />
+    </>)
 }
 
 export default ViewCompareSum;

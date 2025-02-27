@@ -52,3 +52,30 @@ export function API_EXPORTPARTLIST_SELECT(ivSetCode: string, paramWCNO: string, 
         })
     })
 }
+
+
+
+export function APIGetCommitGetHeader(param: any) {
+    return new Promise<any>(resolve => {
+        http.post(`/rpt_compare_auditor_tje_head`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}
+
+
+export function APIGetCommitInfo(param: any) {
+    return new Promise<any>(resolve => {
+        http.post(`/rpt_compare_auditor_tje_det`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}
+
+export function APIConfirmSync(param:any){
+    return new Promise<any>(resolve => {
+        http.post(`/upd_alpha`, param).then((res) => {
+            resolve(res.data);
+        })
+    })
+}

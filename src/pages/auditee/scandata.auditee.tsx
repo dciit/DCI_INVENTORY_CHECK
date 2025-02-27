@@ -340,7 +340,7 @@ function AuditeeScanData() {
         try {
             for (const item of clonedArray) {
 
-                console.log(item)
+                // console.log(item)
                 const submitInfoQR = await API_TAG_RECORD_AUDITEE(
                     item.ivSetCode,
                     item.ym,
@@ -361,7 +361,7 @@ function AuditeeScanData() {
                     setSelectedInfo([]);
                     setScannedData(null);
                 } else {
-                    notifyErr( submitInfoQR.message );
+                    notifyErr(submitInfoQR.message);
 
                 }
             }

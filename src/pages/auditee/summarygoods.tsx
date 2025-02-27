@@ -1,9 +1,8 @@
 import { GoldTwoTone, SearchOutlined } from "@ant-design/icons"
 import { Button, RefSelectProps, Select } from "antd"
 import { useEffect, useRef, useState } from "react";
-import imgprinter from "../../assets/printer.jpg";
-// import * as XLSX from "xlsx";
-// import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import { SummaryData, SummaryHeader, SummaryPartList } from "@/interface/summarypart.interface";
 import { API_SUMMARY_DATA, API_SUMMARY_HEADER, API_SUMMARY_PARTLIST } from "@/service/summarypart.service";
 import { useSelector } from "react-redux";
@@ -81,24 +80,54 @@ function SummerizeGoods() {
         setIsLoad(false);
     }
 
-    // const printRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
 
-//   const handlePrint = useReactToPrint({
-//     content: () => printRef.current,
-//     documentTitle: "Table_Print_A3",
-//   });
-    // const exportToExcel = () => {
-    //     const ws = XLSX.utils.json_to_sheet(initialData);
 
-    //     const wb = XLSX.utils.book_new();
-    //     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    const exportToExcel = (partlist: SummaryPartList[], sumData: SummaryData[], fileName: string) => {
 
-    //     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    //     const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
+        const wb = XLSX.utils.book_new();
 
-    //     saveAs(blob, "dataPartlist.xlsx");
+        let newobj: any = [];
+        partlist.map((item: SummaryPartList) => {
 
-    // }
+            newobj = [...newobj, ...[{
+                wcno: item.wcno,
+                tagNo: item.tagNo,
+                partNo: item.partNo,
+                cm: item.cm,
+                sumQty: item.sumQty
+            }]]
+        });
+
+        let newsumdata: any = [];
+        sumData.map((item: SummaryData) => {
+            newsumdata = [
+                ...newsumdata,
+                ...[{
+                    wcno: item.wcno,
+                    partNo: item.partNo,
+                    cm: item.cm,
+                    model: item.model,
+                    qty: item.qty,
+                    lastDate: item.lastDate
+                }]
+            ]
+        })
+
+
+        const ws1 = XLSX.utils.json_to_sheet(newobj);
+        XLSX.utils.book_append_sheet(wb, ws1, "Part List");
+
+        const ws2 = XLSX.utils.json_to_sheet(newsumdata);
+        XLSX.utils.book_append_sheet(wb, ws2, "Summary Data");
+
+        const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+        const dataBlob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        saveAs(dataBlob, `${fileName}.xlsx`);
+    };
 
     return (
         <>
@@ -149,15 +178,17 @@ function SummerizeGoods() {
                         <GoldTwoTone className="mr-3" />
                         หน้าแตก Part
                     </button>
-                    <button
-                        onClick={() => window.print()}
-                    >
-                        <img src={imgprinter} alt="" className="w-24 h-16" />
+                    <button 
+                        onClick={() => exportToExcel(sumPartlist, sumData, "SummaryCheck")}
+                        className="text-green-700 border-2 border-green-700 bg-white hover:bg-green-600 hover:text-white focus:outline-none focus:ring-green-700 font-medium rounded-lg text-lg  px-3 py-3 ml-3  text-center "
+                        >
+                        Export to Excel
                     </button>
+
                 </div>
             </head >
             <body className="mt-2">
-                <div className="overflow-x-auto max-h-[700px]">
+                <div ref={contentRef} className="overflow-x-auto max-h-[700px]">
                     {
                         !isLoad ? (
                             <>
@@ -247,6 +278,4 @@ function SummerizeGoods() {
 }
 
 export default SummerizeGoods
-
-
 

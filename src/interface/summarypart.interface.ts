@@ -84,3 +84,29 @@ export interface CompareSum {
     auditorDiffQty: number;
     auditorDiffAmt: number;
 }
+
+export interface DataType {
+    key: React.Key;
+    ivSetCode: string;
+    wcno: number;
+    wcnO_SName: string;
+    wcnO_NAME: string;
+    grpCode: string;
+    factory: string;
+    product: string;
+    lineType: string;
+    lineSub: string;
+    kind: string;
+    tagCount: number;
+    tagCountAuditee: number;
+    tagCountAuditor: number;
+    tagCountMain: number;
+    tagCountMainAuditee: number;
+    tagCountMainAuditor: number;
+    tagCountFinal: number;
+    tagCountFinalAuditee: number;
+    tagCountFinalAuditor: number;
+    tagCountExplode: number;
+    tagCountExplodeAuditee: number;
+    tagCountExplodeAuditor: number;
+}

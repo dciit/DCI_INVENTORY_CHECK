@@ -9,8 +9,8 @@ import AuditeeScanData from "./pages/auditee/scandata.auditee";
 import AuditorScanData from "./pages/auditor/scandata.auditor";
 import FinalSumAuditee from "./pages/auditee/finalsum.auditee";
 import DetailSumAuditee from "./pages/auditee/detailsum.auditee";
-import CompareSummary from "./pages/comparesum";
-import DetailCompareSum from "./pages/detailcomparesum";
+import CompareSummary from "./pages/reports/comparesum";
+import DetailCompareSum from "./pages/reports/detailcomparesum";
 import AuditorFill from "./pages/auditor/audtor.check";
 import DetailSumAuditor from "./pages/auditor/detailsum.auditor";
 import SumAuditeeScan from "./pages/auditee/sum.auditee .scan";
@@ -18,6 +18,7 @@ import FinalSumAiditor from "./pages/auditor/finalsum.auditor";
 import TagHistoryAuditor from "./pages/auditor/tagauditor.history";
 import TagHistoryAuditee from "./pages/auditee/tagauditee.history";
 import Layout from "./Layout";
+import Commit from "./pages/commit";
 
 
 
@@ -30,7 +31,7 @@ function Routers() {
   return (
     <Router basename="/ivcount">
       <Routes>
-        <Route element = {<Layout/>} >
+        <Route element={<Layout />} >
           <Route path="/*" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<HomePage />} />
@@ -56,6 +57,7 @@ function Routers() {
 
           <Route path="/comparesum" element={<CompareSummary />} />
           <Route path="/detailcomparesum" element={<DetailCompareSum />} />
+          <Route path="/commit" element={<Commit />} />
         </Route>
       </Routes>
     </Router>

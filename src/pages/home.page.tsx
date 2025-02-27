@@ -21,7 +21,8 @@ function HomePage() {
         { route: '/adtesumfinal', title: 'สรุปการยิงนับ Auditee Summary', icon: <GoldTwoTone /> },
         { route: '/adtorsumfinal', title: 'สรุปการยิงนับ Auditor Summary', icon: <GoldTwoTone /> },
         { route: '/comparesum', title: 'Summary Amount', icon: <GoldTwoTone /> },
-        { route: '/gentag', title: 'Print Tag', icon: <PrinterTwoTone /> }
+        { route: '/gentag', title: 'Print Tag', icon: <PrinterTwoTone /> },
+        { route: '/commit', title: 'หน้าสรุป', icon: <ProfileTwoTone /> }
     ];
 
 
