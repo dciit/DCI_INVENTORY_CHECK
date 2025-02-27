@@ -5,22 +5,23 @@ import Navbar from "@/components/main/navbar";
 import { ReduxInterface } from "@/interface/main.interface";
 import { CompareSum, SummatyTagCheckADTE } from "@/interface/summarypart.interface";
 import { API_SUMMARY_COMPARE, API_TEG_SUMCHECK_ADTE } from "@/service/conclusion.service";
-import { API_TEG_SELECT } from "@/service/tag.service";
+// import { API_TEG_SELECT } from "@/service/tag.service";
 // import { API_SELECT_WCNO } from "@/service/partlist.service";
-import { Table } from "antd";
 // import { Footer } from "antd/es/layout/layout";
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import type { TableColumnsType, TableProps } from 'antd';
-import ViewCompareSum from "./filter.text";
+// import { useNavigate } from "react-router-dom";
+import ViewCompareSum from "./compare.data";
+import { CircularProgress } from "@mui/material";
 function CompareSummary() {
+
     const [Datas, setDatas] = useState<any[]>([])
     const oAccount: ReduxInterface = useSelector((state: any) => state.reducer)
-    const [stagCompare, setTagCompare] = useState<CompareSum[]>([])
+    const [tagCompare, setTagCompare] = useState<CompareSum[]>([])
     const [stagCheck, setTagCheck] = useState<SummatyTagCheckADTE[]>([])
     const [wcno, setWcno] = useState<string[]>([]);
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
+    const [loading, setLoading] = useState<boolean>(true);
     const oLineTyps = ['MAIN', 'FINAL', 'EXPLODE'];
 
 
@@ -31,10 +32,10 @@ function CompareSummary() {
                 oAccount.authen.sName!,
                 oAccount.authen.mSetInfo?.ym!
             );
-
+            // console.log('all')
+            // console.log(checktag)
             if (checktag && Array.isArray(checktag)) {
                 setTagCheck(checktag);
-
                 const uniqueFactories = Array.from(new Set(checktag.map((item) => item.wcno)));
                 setWcno(uniqueFactories);
             } else {
@@ -65,56 +66,57 @@ function CompareSummary() {
                     }
                 })
             );
-
+            // console.log('item')
+            // console.log(compareResults.flat())
             setTagCompare(compareResults.flat());
         } catch (error) {
             console.error("Error fetching compare sum:", error);
         }
     };
 
-    const handleRowClick = async (wcno: string) => {
-        try {
-            console.log("Row clicked with wcno:", wcno);
+    // const handleRowClick = async (wcno: string) => {
+    //     try {
+    //         // console.log("Row clicked with wcno:", wcno);
 
-            const response = await API_TEG_SELECT(
-                oAccount.authen.mSetInfo?.setCode!,
-                oAccount.authen.mSetInfo?.ym!,
-                wcno
-            );
+    //         const response = await API_TEG_SELECT(
+    //             oAccount.authen.mSetInfo?.setCode!,
+    //             oAccount.authen.mSetInfo?.ym!,
+    //             wcno
+    //         );
 
-            const test = await API_SUMMARY_COMPARE(
-                oAccount.authen.mSetInfo?.setCode!,
-                oAccount.authen.mSetInfo?.ym!,
-                wcno
-            );
+    //         const test = await API_SUMMARY_COMPARE(
+    //             oAccount.authen.mSetInfo?.setCode!,
+    //             oAccount.authen.mSetInfo?.ym!,
+    //             wcno
+    //         );
 
-            const ressumcompare = await API_SUMMARY_COMPARE(
-                oAccount.authen.mSetInfo?.setCode!,
-                oAccount.authen.mSetInfo?.ym!,
-                wcno
-            );
+    //         const ressumcompare = await API_SUMMARY_COMPARE(
+    //             oAccount.authen.mSetInfo?.setCode!,
+    //             oAccount.authen.mSetInfo?.ym!,
+    //             wcno
+    //         );
 
-            console.log("API Response:", response);
-            console.log("test", test)
-            console.log("API ResSumCompare:", ressumcompare);
+    //         console.log("API Response:", response);
+    //         console.log("test", test)
+    //         console.log("API ResSumCompare:", ressumcompare);
 
-            if (Array.isArray(response) && Array.isArray(ressumcompare)) {
-                const filteredTagData = response.map(({ wcno, tagNo, partNo, cm, partName, auditeeStatus }) => ({
-                    wcno, tagNo, partNo, cm, partName, auditeeStatus
-                }));
+    //         if (Array.isArray(response) && Array.isArray(ressumcompare)) {
+    //             const filteredTagData = response.map(({ wcno, tagNo, partNo, cm, partName, auditeeStatus }) => ({
+    //                 wcno, tagNo, partNo, cm, partName, auditeeStatus
+    //             }));
 
-                const filteredSumData = ressumcompare.map(({ wcno, bookQty, bookAmt, auditeeQty, auditeeAmt, auditeeDiffQty, auditeeDiffAmt }) => ({
-                    wcno, bookQty, bookAmt, auditeeQty, auditeeAmt, auditeeDiffQty, auditeeDiffAmt
-                }));
+    //             const filteredSumData = ressumcompare.map(({ wcno, bookQty, bookAmt, auditeeQty, auditeeAmt, auditeeDiffQty, auditeeDiffAmt }) => ({
+    //                 wcno, bookQty, bookAmt, auditeeQty, auditeeAmt, auditeeDiffQty, auditeeDiffAmt
+    //             }));
 
-                navigate("/detailcomparesum", { state: { tagData: filteredTagData, sumData: filteredSumData } });
-            } else {
-                console.error("Error: Expected arrays but received", response, ressumcompare);
-            }
-        } catch (error) {
-            console.error("Error fetching row data:", error);
-        }
-    };
+    //             navigate("/detailcomparesum", { state: { tagData: filteredTagData, sumData: filteredSumData } });
+    //         } else {
+    //             console.error("Error: Expected arrays but received", response, ressumcompare);
+    //         }
+    //     } catch (error) {
+    //         console.error("Error fetching row data:", error);
+    //     }
+    // };
 
 
     useEffect(() => {
@@ -293,8 +295,7 @@ function CompareSummary() {
 
     // ];
     useEffect(() => {
-        console.log(stagCheck)
-        if (stagCheck.length) {
+        if (tagCompare.length) {
             const filteredStagCheck = stagCheck
                 .filter((row) => row.factory && (row.factory.startsWith('FAC') || row.factory.startsWith('ODM')) && !row.wcno.startsWith('90'))
 
@@ -307,19 +308,16 @@ function CompareSummary() {
                     }))
                 )
                 .flat();
-
             setDatas([...filteredStagCheck, ...expandedRows])
         }
-    }, [stagCheck])
-
+    }, [tagCompare])
     useEffect(() => {
+        console.log('eff datas')
         if (Datas.length) {
-            console.log(Datas.filter(x => x.factory == 'FAC1'))
+            console.log('has data')
+            setLoading(false);
         }
     }, [Datas])
-
-
-
     return (
         <>.
 
@@ -332,30 +330,11 @@ function CompareSummary() {
                         <p className=" mt-2 text-2xl font-light">(Auditee)</p>
                     </p>
                 </div>
-                {/* <div className="flex flex-row gap-3 justify-start mr-5">
-                    <div id="clear" className="mt-9 ml-5">
-                        <a
-                            href={`/${base}/home`}
-                            className="text-white bg-[#003092] hover:bg-[#003092]  focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg px-5 py-2.5 text-center  dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900">
-                            <HomeOutlined />
-                        </a>
-                    </div>
-                </div> */}
                 <body className="flex w-full p-4 justify-center">
                     {
-                        Datas.length && <ViewCompareSum  data={Datas}/>
+                        loading == true ? <div className="items-center justify-center mt-3"><CircularProgress /></div> : 
+                        (Datas.length && <ViewCompareSum data={Datas} tagCompare={tagCompare} />)
                     }
-                    {/* <Table
-                        columns={columns}
-                        dataSource={Datas}
-                        rowKey={(record: any) => record.key || record.wcno}
-                        onRow={(record: any) => ({
-                            onClick: () => handleRowClick(record.wcno),
-                        })}
-                        pagination={false}
-                        bordered
-                    // scroll={{ y: 600 }}
-                    /> */}
                 </body>
             </head>
         </>
@@ -366,7 +345,3 @@ function CompareSummary() {
 }
 
 export default CompareSummary
-
-
-
-

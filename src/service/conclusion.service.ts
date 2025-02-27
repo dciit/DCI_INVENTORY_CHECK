@@ -23,7 +23,7 @@ export function API_TEG_SUMCHECK_ADTE(ivSetCode: string, paramBy: string, paramY
 
 export function API_SUMMARY_COMPARE(paramSetCode: string, paramYM: string, paramWCNO: string) {
     return new Promise<any>(resolve => {
-        http.post(`/tag_compare_summary`, {ivSetCode : paramSetCode, paramYM:paramYM, paramWCNO : paramWCNO}).then((res) => {
+        http.post(`/rpt_compare_auditee_ts10`, {ivSetCode : paramSetCode, paramYM:paramYM, paramWCNO : paramWCNO}).then((res) => {
             resolve(res.data);
         }).catch((e) => {
             resolve({

@@ -237,10 +237,11 @@ function AuditeeFill() {
 
         let submitinfo = await API_SAVE_INFO_INVENTORY(clonedArray)
 
-        if (submitinfo != null) {
-            notifyOk('Data Save Successfully')
+        
+        if (submitinfo.message.trim() == "") {
+            notifyOk('บันทึกเรียบร้อย');
         } else {
-            notifyErr('The Infomation is incorrect')
+            notifyErr(submitinfo.message);
         }
 
     }

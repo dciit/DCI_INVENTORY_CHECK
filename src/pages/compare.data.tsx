@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table } from 'antd';
-import type { TableColumnsType, TableProps } from 'antd';
+import type { TableColumnsType } from 'antd';
 import { CompareSum } from '@/interface/summarypart.interface';
 
 interface DataType {
@@ -29,6 +29,7 @@ interface DataType {
     tagCountExplodeAuditor: number;
 }
 
+
 interface PropFilter {
     text: string;
     value: string;
@@ -36,24 +37,31 @@ interface PropFilter {
 
 interface ParamCompareSum {
     data: DataType[];
+    tagCompare: CompareSum[];
+}
+
+
+const CreateFilterChoice = (data: DataType[], key: string | number) => {
+    let resChoice: PropFilter[] = [];
+    [...new Set([...data.map((x: any) => x[key.toString()])])].map(n => {
+        resChoice.push({ text: n, value: n })
+    })
+    return resChoice
 }
 const ViewCompareSum = (props: ParamCompareSum) => {
-    const { data } = props;
+    const { data, tagCompare } = props;
+
+
     const [columns, setColumn] = useState<TableColumnsType<DataType>>([])
     useEffect(() => {
         if (data.length) {
-            let FactoryChoice: PropFilter[] = [];
-            [...new Set([...data.map((x: DataType) => x.factory)])].map(n => {
-                FactoryChoice.push({ text: n, value: n })
-            })
             setColumn([
                 {
-                    title: 'Name',
+                    title: 'Factory',
                     dataIndex: 'factory',
                     showSorterTooltip: { target: 'full-header' },
-                    filters: FactoryChoice,
-                    // specify the condition of filtering result
-                    // here is that finding the name started with `value`
+                    width: 120,
+                    filters: CreateFilterChoice(data, 'factory'),
                     onFilter: (value, record) => record.factory.indexOf(value as string) === 0,
                     sorter: (a, b) => a.factory.length - b.factory.length
                 },
@@ -62,13 +70,17 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                     dataIndex: "product",
                     key: "product",
                     align: 'center' as 'center',
+                    filters: CreateFilterChoice(data, 'product'),
+                    onFilter: (value, record) => record.product.indexOf(value as string) === 0
                 },
                 {
                     title: "WC",
                     dataIndex: "wcno",
                     key: "wcno",
                     align: 'center' as 'center',
-                    sorter: (a, b) => a.wcno - b.wcno
+                    filters: CreateFilterChoice(data, 'wcno'),
+                    sorter: (a, b) => a.wcno - b.wcno,
+                    onFilter: (value, record) => record.wcno.toString().indexOf(value as string) === 0
 
                 },
                 {
@@ -76,48 +88,66 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                     dataIndex: "wcnO_NAME",
                     key: "wcnO_NAME",
                     align: 'center' as 'center',
-                    // render: (_text: any, row: { wcno: string; lineType: string; wcnO_NAME: string; } ) => {
-                    //     if (row.wcno.startsWith('90')) {
-                    //         return (
-                    //             <>
-                    //                 {row.lineType === "MAIN" ? (
-                    //                     <span>
-                    //                         MAIN ASSEMBLY LINE {row.wcno.substring(2, 3)}
-                    //                     </span>
-                    //                 ) : (
-                    //                     <span>
-                    //                         FINAL LINE LINE {row.wcno.substring(2, 3)}
-                    //                     </span>
-                    //                 )}
-                    //             </>
-                    //         );
-                    //     } else {
-                    //         return <span>{row.wcnO_NAME}</span>
-                    //     }
-                    // }
+                    width: 300,
+                    render: (_text: any, row: { wcno: number; lineType: string; wcnO_NAME: string; }) => {
+                        if (row.wcno.toString().startsWith('90')) {
+                            return (
+                                <>
+                                    {row.lineType === "MAIN" ? (
+                                        <span>MAIN ASSEMBLY LINE {row.wcno.toString().substring(2, 3)}</span>
+                                    ) : row.lineType === "FINAL" ? (
+                                        <span>FINAL LINE {row.wcno.toString().substring(2, 3)}</span>
+                                    ) : (
+                                        <span>EXPLODE LINE {row.wcno.toString().substring(2, 3)}</span>
+                                    )}
+                                </>
+
+                            );
+                        } else {
+                            return <span>{row.wcnO_NAME}</span>
+                        }
+                    }
                 },
                 {
                     title: "Completed",
                     key: "completed",
                     align: 'center' as 'center',
-                    render: (_text: any, row: { tagCountMain: number; tagCountMainAuditee: number; tagCountFinal: number; tagCountFinalAuditee: number; lineType: string }) => {
+                    sorter: (a, b) => {
+                        const getPercentage = (row: any) => {
+                            if (row.lineType === "MAIN") {
+                                return row.tagCountMain > 0 ? (row.tagCountMainAuditee / row.tagCountMain) * 100 : 0;
+                            } else if (row.lineType === "FINAL") {
+                                return row.tagCountFinal > 0 ? (row.tagCountFinalAuditee / row.tagCountFinal) * 100 : 0;
+                            } else {
+                                return row.tagCountFinal > 0 ? (row.tagCountExplodeAuditee / row.tagCountFinal) * 100 : 0;
+                            }
+                        };
+                        return getPercentage(a) - getPercentage(b);
+                    },
+                    render: (_text: any, row: { tagCountMain: number; tagCountMainAuditee: number; tagCountFinal: number; tagCountFinalAuditee: number; tagCountExplodeAuditee: number; lineType: string }) => {
                         return (
                             <>
-                                {
-                                    row.lineType === "MAIN" ? (
+                                <>
+                                    {row.lineType === "MAIN" ? (
                                         <span>
                                             {row.tagCountMain > 0
                                                 ? ((row.tagCountMainAuditee / row.tagCountMain) * 100).toFixed(1) + "%"
                                                 : "0%"}
                                         </span>
-                                    ) : (
+                                    ) : row.lineType === "FINAL" ? (
                                         <span>
                                             {row.tagCountFinal > 0
                                                 ? ((row.tagCountFinalAuditee / row.tagCountFinal) * 100).toFixed(1) + "%"
                                                 : "0%"}
                                         </span>
-                                    )
-                                }
+                                    ) : (
+                                        <span>
+                                            {row.tagCountFinal > 0
+                                                ? ((row.tagCountExplodeAuditee / row.tagCountFinal) * 100).toFixed(1) + "%"
+                                                : "0%"}
+                                        </span>
+                                    )}
+                                </>
                             </>
                         );
                     },
@@ -130,20 +160,22 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                             key: "totalBookQty",
                             align: 'center' as 'center',
                             render: (_text: any, row: { wcno: number; }) => {
-                                const compareRows: any[] = data.filter((compare: DataType) => compare.wcno == row.wcno);
-                                const totalBookQty = compareRows.reduce((sum, item) => sum + (item.bookQty || 0), 0).toFixed(2);
+                                const compareRows: CompareSum[] = tagCompare.filter((compare: CompareSum) => compare.wcno == row.wcno);
+                                const totalBookQty = compareRows.reduce((sum, item) => sum + (item.bookQty || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalBookQty}</span>;
                             },
+                            // sorter: (a, b) => a.bookQty - b.bookQty,
                         },
                         {
                             title: "AMOUNT",
                             key: "totalBookAmt",
                             align: 'center' as 'center',
                             render: (_text: any, row: { wcno: number; }) => {
-                                const compareRows: any[] = data.filter((compare: DataType) => compare.wcno === row.wcno);
-                                const totalBookAmt = compareRows.reduce((sum, item) => sum + (item.bookAmt || 0), 0).toFixed(2);
+                                const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
+                                const totalBookAmt = compareRows.reduce((sum, item) => sum + (item.bookAmt || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalBookAmt}</span>;
                             },
+                            // sorter: (a, b) => a.wcno - b.wcno,
                         },
                     ]
                 },
@@ -156,8 +188,8 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                             key: "totalAuditeeQty",
                             align: 'center' as 'center',
                             render: (_text: any, row: { wcno: number; }) => {
-                                const compareRows: any[] = data.filter((compare: DataType) => compare.wcno === row.wcno);
-                                const totalAuditeeQty = compareRows.reduce((sum, item) => sum + (item.auditeeQty || 0), 0).toFixed(2);
+                                const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
+                                const totalAuditeeQty = compareRows.reduce((sum, item) => sum + (item.auditeeQty || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalAuditeeQty}</span>;
                             },
                         },
@@ -166,8 +198,8 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                             key: "totalAuditeeAmt",
                             align: 'center' as 'center',
                             render: (_text: any, row: { wcno: number; }) => {
-                                const compareRows: any[] = data.filter((compare: DataType) => compare.wcno === row.wcno);
-                                const totalAuditeeAmt = compareRows.reduce((sum, item) => sum + (item.auditeeAmt || 0), 0).toFixed(2);
+                                const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
+                                const totalAuditeeAmt = compareRows.reduce((sum, item) => sum + (item.auditeeAmt || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalAuditeeAmt}</span>;
                             },
                         },
@@ -182,8 +214,8 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                             key: "totalAuditeeDiffQty",
                             align: 'center' as 'center',
                             render: (_text: any, row: { wcno: number; }) => {
-                                const compareRows: any[] = data.filter((compare: DataType) => compare.wcno === row.wcno);
-                                const totalAuditeeDiffQty = compareRows.reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0).toFixed(2);
+                                const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
+                                const totalAuditeeDiffQty = compareRows.reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                 return <span>{totalAuditeeDiffQty}</span>;
                             },
                         },
@@ -192,8 +224,8 @@ const ViewCompareSum = (props: ParamCompareSum) => {
                             key: "totalAuditeeDiffAmt",
                             align: 'center' as 'center',
                             render: (_text: any, row: { wcno: number; }) => {
-                                const compareRows: any[] = data.filter((compare: DataType) => compare.wcno === row.wcno);
-                                const totalAuditeeDiffAmt = compareRows.reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0).toFixed(2);
+                                const compareRows: any[] = tagCompare.filter((compare: CompareSum) => compare.wcno === row.wcno);
+                                const totalAuditeeDiffAmt = compareRows.reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                 return <span>{totalAuditeeDiffAmt}</span>;
                             },
                         },
@@ -207,7 +239,7 @@ const ViewCompareSum = (props: ParamCompareSum) => {
         dataSource={data}
         showSorterTooltip={{ target: 'sorter-icon' }}
         pagination={false}
-        scroll={{ y: 600 }}
+        scroll={{ y: 900 }}
     />
 }
 

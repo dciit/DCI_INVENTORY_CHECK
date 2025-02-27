@@ -13,7 +13,7 @@ export function API_SETTAG_CODE(paramYMD: string, paramBy: string) {
         http.post(`/setdata_gen`,{paramYMD : paramYMD, paramBy : paramBy}).then((res) => {
             resolve(res.data);
         }).catch((e) => {
-            console.log('Gen Data Success')
+            // console.log('Gen Data Success')
             resolve({
                 status: false,
                 message: e.response.statusText
@@ -27,7 +27,7 @@ export function API_SAVE_INFO_INVENTORY(oPartList: PartListQtyInfo[]) {
         http.post(`/explodepart_record`,oPartList).then((res) => {
             resolve(res.data);
         }).catch((e) => {
-            console.log('Sent Data Successful')
+            // console.log('Sent Data Successful')
             resolve({
                 status: false,
                 message: e.response.statusText
@@ -43,7 +43,7 @@ export function API_EXPORTPARTLIST_SELECT(ivSetCode: string, paramWCNO: string, 
         http.post(`/explodepart_select`,{ivSetCode: ivSetCode, paramWCNO: paramWCNO, paramModel: paramModel}).then((res) => {
             resolve(res.data);
         }).catch((e) => {
-            console.log('Sent Data Successful')
+            // console.log('Sent Data Successful')
             resolve({
                 status: false,
                 message: e.response.statusText

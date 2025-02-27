@@ -327,19 +327,21 @@ function AuditorScanData() {
                     item.auditorBy
                 );
 
-                if (!submitInfoQR) {
-                    throw new Error("API call failed for some records.");
-                }
+
+                if (submitInfoQR.status.toUpperCase() == "TRUE") {
+                    // load history 
+                    handlePersonHistory();
+
+                    notifyOk("บันทึกสำเร็จ");
+                    setSelectedInfo([]);
+                    setScannedData(null);
+
+                } else {
+                    notifyErr( submitInfoQR.message );
+
+                } 
             }
 
-
-            // load history
-            handlePersonHistory();
-
-
-            notifyOk("Data saved successfully");
-            setSelectedInfo([]);
-            setScannedData(null);
 
         } catch (error) {
             notifyErr("You couldn't Enter QTY");

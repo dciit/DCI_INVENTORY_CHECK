@@ -11,7 +11,6 @@ import FinalSumAuditee from "./pages/auditee/finalsum.auditee";
 import DetailSumAuditee from "./pages/auditee/detailsum.auditee";
 import CompareSummary from "./pages/comparesum";
 import DetailCompareSum from "./pages/detailcomparesum";
-import CameraPage from "./CameraPage";
 import AuditorFill from "./pages/auditor/audtor.check";
 import DetailSumAuditor from "./pages/auditor/detailsum.auditor";
 import SumAuditeeScan from "./pages/auditee/sum.auditee .scan";
@@ -57,8 +56,6 @@ function Routers() {
 
           <Route path="/comparesum" element={<CompareSummary />} />
           <Route path="/detailcomparesum" element={<DetailCompareSum />} />
-
-          <Route path="/scan" element={<CameraPage />} />
         </Route>
       </Routes>
     </Router>

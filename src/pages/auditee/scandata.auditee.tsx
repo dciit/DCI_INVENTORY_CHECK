@@ -323,7 +323,7 @@ function AuditeeScanData() {
 
 
 
-    const handleInputData = async () => {
+    const handleSaveData = async () => {
         if (selectedInfo.length > 0) {
             if (!selectedInfo[0].auditeeQty) {
                 refQty.current?.focus();
@@ -352,19 +352,22 @@ function AuditeeScanData() {
                     item.auditeeBy
                 );
 
-                if (!submitInfoQR) {
-                    throw new Error("API call failed for some records.");
+                if (submitInfoQR.status.toUpperCase() == "TRUE") {
+
+                    // load history 
+                    handlePersonHistory();
+
+                    notifyOk("บันทึกสำเร็จ");
+                    setSelectedInfo([]);
+                    setScannedData(null);
+                } else {
+                    notifyErr( submitInfoQR.message );
 
                 }
             }
 
 
-            // load history 
-            handlePersonHistory();
 
-            notifyOk("บันทึกสำเร็จ");
-            setSelectedInfo([]);
-            setScannedData(null);
 
         } catch (error) {
             notifyErr("ไม่สามารถบันทึกในระบบได้");
@@ -475,7 +478,7 @@ function AuditeeScanData() {
                                 <tr key={index} style={{ cursor: 'pointer' }}
                                     className=" border-gray-200 hover:bg-gray-100 bg-white">
                                     <td className="border border-gray-600 px-4 py-2 text-center">{item.wcno}</td>
-                                    <td className="border border-gray-600 px-4 py-2 text-left">{item.partNo} {item.cm} ({item.tagNo})<br/>{item.partName}</td>
+                                    <td className="border border-gray-600 px-4 py-2 text-left">{item.partNo} {item.cm} ({item.tagNo})<br />{item.partName}</td>
                                     <td className="border border-gray-600 px-4 py-2 text-right">{item.auditeeQty}</td>
                                     <td className="border border-gray-600 px-4 py-2 text-center">{
                                         item.auditeeBy != "" ? (
@@ -625,7 +628,7 @@ function AuditeeScanData() {
 
                                     <div id="action" className="flex items-center justify-center pt-[10px] mt-6">
                                         <button
-                                            onClick={handleInputData}
+                                            onClick={handleSaveData}
                                             type="submit"
                                             className="text-black bg-[#D4EBF8] hover:bg-[#D4EBF8] focus:ring-2 focus:outline-none focus:ring-[#D4EBF8] font-semibold rounded-lg border-black text-lg w-full sm:w-auto px-36 py-3 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900"
                                         >

@@ -81,12 +81,12 @@ function SummerizeGoods() {
         setIsLoad(false);
     }
 
-    const printRef = useRef<HTMLDivElement>(null);
+    // const printRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-    documentTitle: "Table_Print_A3",
-  });
+//   const handlePrint = useReactToPrint({
+//     content: () => printRef.current,
+//     documentTitle: "Table_Print_A3",
+//   });
     // const exportToExcel = () => {
     //     const ws = XLSX.utils.json_to_sheet(initialData);
 
@@ -167,6 +167,7 @@ function SummerizeGoods() {
                                         <tr>
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-0 bg-white z-[20] w-[50px] text-center shadow-md" rowSpan={2}>NO</th>
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[50px]  bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>WC</th>
+                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[110px] bg-white z-20 w-[160px] text-center shadow-md" rowSpan={2}>Tag No</th>
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[110px] bg-white z-20 w-[160px] text-center shadow-md" rowSpan={2}>Part No</th>
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[270px] bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[330px] bg-white z-20 w-[280px] text-center shadow-md" rowSpan={2}>PART NAME</th>
@@ -193,6 +194,7 @@ function SummerizeGoods() {
                                                         {rowIndex + 1}
                                                     </td>
                                                     <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-center shadow-md">{row.wcno}</td>
+                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-center shadow-md">{row.tagNo}</td>
                                                     <td className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] whitespace-nowrap text-center shadow-md">{row.partNo}</td>
                                                     <td className="border border-gray-400 px-4 py-2 sticky left-[270px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
                                                     <td className="border border-gray-400 px-4 py-2 sticky left-[330px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partName}</td>
@@ -246,7 +248,5 @@ function SummerizeGoods() {
 
 export default SummerizeGoods
 
-function useReactToPrint(arg0: { content: () => HTMLDivElement | null; documentTitle: string; }) {
-    throw new Error("Function not implemented.");
-}
+
 

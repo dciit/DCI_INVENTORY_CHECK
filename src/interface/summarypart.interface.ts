@@ -8,6 +8,7 @@ export interface SummaryHeader {
 export interface SummaryPartList {
     ivSetCode: string;
     wcno: string;
+    tagNo: string;
     partNo: string;
     cm: string;
     partName: string;
