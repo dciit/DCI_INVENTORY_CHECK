@@ -57,7 +57,7 @@ function AuditorScanData() {
                 } else if (oAccount.authen.role === "AUDITEE") {
                     navigate('/home');
                 } else if (oAccount.authen.role === "AUDITOR") {
-                    // navigate(`/home`);
+                    
                 } else {
                     navigate(`/login`);
                 }
@@ -244,7 +244,7 @@ function AuditorScanData() {
 
         const qrItem = await API_TEG_SELECT_QR(param);
 
-        console.log(typeof qrItem);
+        
 
         if (typeof qrItem == 'object' && qrItem.length) {
             setSelectedInfo(qrItem);
@@ -300,7 +300,7 @@ function AuditorScanData() {
         setScannedData(tempQr);
     };
 
-    const handleInputData = async () => {
+    const handleSaveData = async () => {
         if (selectedInfo.length > 0) {
             if (!selectedInfo[0].auditorQty) {
                 setShowAlert(true);
@@ -323,7 +323,7 @@ function AuditorScanData() {
                     item.partNo,
                     item.cm,
                     item.qrCode,
-                    item.auditorQty ?? 0,
+                    item.auditorQty,
                     item.auditorBy
                 );
 
@@ -565,12 +565,12 @@ function AuditorScanData() {
                                             id="qty"
                                             placeholder="Enter QTY to inspect"
                                             className="w-3/4 border border-black hover:border-black bg-[#FFF5D7] hover:bg-[#FFF5D7]"
-                                            value={item.auditeeQty}
+                                            value={item.auditorQty}
                                             autoFocus
                                             onChange={(e) => {
                                                 const inputValue = e.target.value.trim();
                                                 let clone: InventoryInfo[] = selectedInfo;
-                                                clone[0].auditeeQty = Number(inputValue);
+                                                clone[0].auditorQty = Number(inputValue);
 
                                                 if (unitNotDigit.includes(item.whum.toUpperCase().trim())) {
                                                     if (inputValue.includes('.')) { return; }
@@ -615,7 +615,7 @@ function AuditorScanData() {
 
                                     <div id="action" className="flex items-center justify-center pt-[10px] mt-6">
                                         <button
-                                            onClick={handleInputData}
+                                            onClick={handleSaveData}
                                             type="submit"
                                             className="text-black bg-[#D4EBF8] hover:bg-[#D4EBF8] focus:ring-2 focus:outline-none focus:ring-[#D4EBF8] font-semibold rounded-lg border-black text-lg w-full sm:w-auto px-36 py-3 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900"
                                         >

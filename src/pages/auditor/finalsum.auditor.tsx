@@ -55,7 +55,7 @@ function FinalSumAiditor() {
     useEffect(() => {
 
         fetchCheckTag();
-        
+
     }, []);
 
 
@@ -81,8 +81,8 @@ function FinalSumAiditor() {
                         รายการนับวัตถุดิบของแต่ละสายการผลิต โดย Auditor
                     </p>
                 </div>
-                <div className="mt-7 flex justify-start gap-2">
-                    <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">Factory</span>
+                <div className="mt-7 flex justify-start gap-2 ml-4">
+                    <span className="p-2.5 bg-[#003092] border border-black rounded-md text-lg text-white font-semibold text-center">Factory</span>
                     <Select
                         ref={refFAC}
                         showSearch
@@ -95,22 +95,22 @@ function FinalSumAiditor() {
                     />
                 </div>
             </head>
-            <body className="flex w-full p-4 justify-center mt-3">
-                <div className="max-h-[600px]">
-                    <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
+            <body className="flex w-full p-4 justify-cente">
+                <div className="overflow-x-auto max-h-[600px] mx-4">
+                    <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed ">
                         <thead>
                             <tr className="bg-[#F9F5EB]">
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" rowSpan={2}>Factory</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" rowSpan={2}>Procuct</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" rowSpan={2}>WC</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" rowSpan={2}>Line Name</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" rowSpan={2}>Tag Count</th>
-                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" colSpan={2}>Auditor Check</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-32" rowSpan={2}>Factory</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-32" rowSpan={2}>Procuct</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-28" rowSpan={2}>WC</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 w-80" rowSpan={2}>Line Name</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" colSpan={3}>Auditor Check</th>
                                 <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2" rowSpan={2}>Completed</th>
                             </tr>
                             <tr className="bg-[#F9F5EB]">
-                                <th className="border border-gray-600 sticky top-10 bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนที่นับได้</th>
-                                <th className="border border-gray-600 sticky top-10 bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนคงเหลือ</th>
+                                <th className="border border-gray-600 sticky top-[42px] bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนที่ปริ๊นท์</th>
+                                <th className="border border-gray-600 sticky top-[42px] bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนที่นับได้</th>
+                                <th className="border border-gray-600 sticky top-[42px] bg-[#F9F5EB] z-[10] px-4 py-2">จำนวนคงเหลือ</th>
                             </tr>
                         </thead>
 
@@ -127,7 +127,7 @@ function FinalSumAiditor() {
                                         <td className="border border-gray-600 px-4 py-2 text-left">{row.wcnO_NAME}</td>
                                         <td className="border border-gray-600 px-4 py-2 text-right">{row.tagCount}</td>
                                         <td className={`border border-gray-600 px-4 py-2 text-right 
-                                        ${row.tagCount === row.tagCountAuditor ? "text-green-600" : "text-black "}`}>
+                                        ${row.tagCount === row.tagCountAuditor ? "text-green-600" : "text-red-500 "}`}>
                                             {row.tagCountAuditor}
                                         </td>
 
@@ -138,7 +138,7 @@ function FinalSumAiditor() {
                                         <td className={`border border-gray-600 px-4 py-2 text-right ${row.tagCount === row.tagCountAuditor ? "text-green-600 " : " text-red-500 "}`}>
                                             {row.tagCount > 0 ? ((row.tagCountAuditor / row.tagCount) * 100).toFixed(1) + "%" : "0%"}
                                             <Button type="primary" className="mr-5" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
-                                                แสดงรายการ</Button> 
+                                                แสดงรายการ</Button>
                                         </td>
                                     </tr>
                                 ))}
@@ -149,7 +149,7 @@ function FinalSumAiditor() {
                                 .map((row, rowIndex) => (
                                     oLineTyps.map((ln) => (
 
-                                        <tr key={rowIndex}  style={{ cursor: "pointer" }}
+                                        <tr key={rowIndex} style={{ cursor: "pointer" }}
                                             className="dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
                                             <td className="border border-gray-600 px-4 py-2 text-center">{row.factory}</td>
                                             <td className="border border-gray-600 px-4 py-2 text-center">{row.product}</td>
@@ -198,7 +198,7 @@ function FinalSumAiditor() {
                                                         </td>
                                                         <td className={`border border-gray-600 px-4 py-2 text-right ${row.tagCountFinal === row.tagCountFinalAuditor ? "text-green-600 " : " text-red-500 "} `}>
                                                             {row.tagCountFinal > 0 ? ((row.tagCountFinalAuditor / row.tagCountFinal) * 100).toFixed(1) + "%" : "0%"}
-                                                            <Button type="primary" className="mr-5" size="small" icon={<TbReportSearch />}  onClick={() => handleModalPart(row)} >
+                                                            <Button type="primary" className="mr-5" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
                                                                 แสดงรายการ</Button>
                                                         </td>
                                                     </> : <>
@@ -229,17 +229,70 @@ function FinalSumAiditor() {
                                         </tr>
                                     ))
                                 ))}
-
-
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan={4} className="border border-gray-600 text-right p-4 py-2 font-bold">Total:</td>
+                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
+                                    {new Intl.NumberFormat().format(
+                                        stagCheck.reduce((total: any, item: any) => {
+                                            return (
+                                                total +
+                                                (item.tagCount) +
+                                                (item.tagCountMain) +
+                                                (item.tagCountFinal) +
+                                                (item.tagCountExplode)
+                                            );
+                                        }, 0)
+                                    )}
+                                </td>
+                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
+                                    {new Intl.NumberFormat().format(
+                                        stagCheck.reduce((total: any, item: { wcno: any; }) => {
+                                            const sumItem = stagCheck?.find((s: any) => s.wcno === item.wcno);
+                                            return total + (sumItem?.tagCountAuditor || 0);
+                                        }, 0)
+                                    )}
+                                </td>
+                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
+                                    {new Intl.NumberFormat().format(
+                                        stagCheck.reduce((total: number, item: any) => {
+                                            return (
+                                                total +
+                                                (item.tagCount - item.tagCountAuditor) +
+                                                (item.tagCountMain - item.tagCountMainAuditor) +
+                                                (item.tagCountFinal - item.tagCountFinalAuditor) +
+                                                (item.tagCountExplode - item.tagCountExplodeAuditor)
+                                            );
+                                        }, 0)
+                                    )}
+                                </td>
+
+                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
+                                    {(() => {
+                                        const totalTagCount =
+                                            stagCheck.reduce((sum: number, item: any) =>
+                                                sum + item.tagCount + item.tagCountMain + item.tagCountFinal + item.tagCountExplode, 0);
+
+                                        const totalAuditorCount =
+                                            stagCheck.reduce((sum: number, item: any) =>
+                                                sum + item.tagCountAuditor + item.tagCountMainAuditor + item.tagCountFinalAuditor + item.tagCountExplodeAuditor, 0);
+
+                                        const overallPercentage = totalTagCount > 0 ? (totalAuditorCount / totalTagCount) * 100 : 0;
+
+                                        return overallPercentage.toFixed(1) + "%";
+                                    })()}
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
 
             </body>
 
 
-            <DetailSumAuditor open={isModalPart} close={setIsModalPart} tagData={TagData}  />
-            
+            <DetailSumAuditor open={isModalPart} close={setIsModalPart} tagData={TagData} />
+
 
         </>
 

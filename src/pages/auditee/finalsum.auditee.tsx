@@ -79,7 +79,6 @@ function FinalSumAuditee() {
                 <div className="flex flex-row justify-center items-cente">
                     <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#E1EACD] text-3xl text-black font-bold text-center">
                         รายการนับวัตถุดิบของแต่ละสายการผลิต โดย Auditee
-                        <hr className="mx-28 mt-2  border-black" />
                         <p className=" mt-2 text-2xl font-light"></p>
                     </p>
                 </div>
@@ -97,8 +96,8 @@ function FinalSumAuditee() {
                     />
                 </div>
             </head>
-            <body className="flex w-full p-4 justify-center mt-3">
-                <div className="overflow-x-auto max-h-[600px]">
+            <body className="flex w-full p-4 justify-center">
+                <div className="overflow-x-auto max-h-[600px] mx-4">
                     <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
                         <thead>
                             <tr className="bg-[#F9F5EB]">
@@ -237,9 +236,14 @@ function FinalSumAuditee() {
                                 <td colSpan={4} className="border border-gray-600 text-right p-4 py-2 font-bold">Total:</td>
                                 <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
                                     {new Intl.NumberFormat().format(
-                                        stagCheck.reduce((total: any, item: { wcno: any; }) => {
-                                            const sumItem = stagCheck?.find((s: any) => s.wcno === item.wcno);
-                                            return total + (sumItem?.tagCount || 0);
+                                        stagCheck.reduce((total: any, item: any) => {
+                                            return (
+                                                total +
+                                                (item.tagCount) +
+                                                (item.tagCountMain) +
+                                                (item.tagCountFinal) +
+                                                (item.tagCountExplode)
+                                            );
                                         }, 0)
                                     )}
                                 </td>
@@ -253,15 +257,36 @@ function FinalSumAuditee() {
                                 </td>
                                 <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
                                     {new Intl.NumberFormat().format(
-                                        stagCheck.reduce((total: any, item: { wcno: any; }) => {
-                                            const sumItem = stagCheck?.find((s: any) => s.wcno === item.wcno);
-                                            return total + (sumItem?.tagCountAuditee || 0);
+                                        stagCheck.reduce((total: number, item: any) => {
+                                            return (
+                                                total +
+                                                (item.tagCount - item.tagCountAuditee) +
+                                                (item.tagCountMain - item.tagCountMainAuditee) +
+                                                (item.tagCountFinal - item.tagCountFinalAuditee) +
+                                                (item.tagCountExplode - item.tagCountExplodeAuditee)
+                                            );
                                         }, 0)
                                     )}
                                 </td>
-                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
 
+                                <td className="border border-gray-600 px-4 py-2 text-right font-semibold bg-[]">
+                                    {(() => {
+                                        const totalTagCount =
+                                            stagCheck.reduce((sum: number, item: any) =>
+                                                sum + item.tagCount + item.tagCountMain + item.tagCountFinal + item.tagCountExplode, 0);
+
+                                        const totalAuditeeCount =
+                                            stagCheck.reduce((sum: number, item: any) =>
+                                                sum + item.tagCountAuditee + item.tagCountMainAuditee + item.tagCountFinalAuditee + item.tagCountExplodeAuditee, 0);
+
+                                        const overallPercentage = totalTagCount > 0 ? (totalAuditeeCount / totalTagCount) * 100 : 0;
+
+                                        return overallPercentage.toFixed(1) + "%";
+                                    })()}
                                 </td>
+
+
+
                             </tr>
                         </tfoot>
                     </table>

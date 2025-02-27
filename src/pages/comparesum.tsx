@@ -12,18 +12,16 @@ import { Table } from "antd";
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
+import type { TableColumnsType, TableProps } from 'antd';
+import ViewCompareSum from "./filter.text";
 function CompareSummary() {
-
+    const [Datas, setDatas] = useState<any[]>([])
     const oAccount: ReduxInterface = useSelector((state: any) => state.reducer)
-
     const [stagCompare, setTagCompare] = useState<CompareSum[]>([])
     const [stagCheck, setTagCheck] = useState<SummatyTagCheckADTE[]>([])
     const [wcno, setWcno] = useState<string[]>([]);
-
-
     const navigate = useNavigate();
-    const oLineTyps = ['MAIN', 'FINAL'];
+    const oLineTyps = ['MAIN', 'FINAL', 'EXPLODE'];
 
 
     const fetchCheckTag = async () => {
@@ -131,188 +129,200 @@ function CompareSummary() {
     }, [wcno]);
 
 
-    const columns = [
-        {
-            title: 'Factory',
-            // <span style={{ backgroundColor: "yellow", display: "block", padding: "15px" }}>Factory</span>
-            dataIndex: "factory",
-            key: "factory",
-            align: "center" as "center",
-            width: 90,
-            filters: [
-                { text: "Fac1", value: "FAC1" },
-                { text: "Fac2", value: "FAC2" },
-                { text: "Fac3", value: "FAC3" },
-                { text: "ODM", value: "ODM" },
-            ],
-            onFilter: (value: any, record: { factory: any; }) => record.factory === value,
-            
-        },
-        {
-            title: "Product",
-            dataIndex: "product",
-            key: "product",
-            align: 'center' as 'center',
+    // const columns: TableColumnsType<SummatyTagCheckADTE> = [
+    //     {
+    //         title: 'Factory',
+    //         // <span style={{ backgroundColor: "yellow", display: "block", padding: "15px" }}>Factory</span>
+    //         dataIndex: "factory",
+    //         align: "center" as "center",
+    //         width: 120,
+    //         filters: [
+    //             { text: "FAC1", value: "FAC1" },
+    //             { text: "FAC2", value: "FAC2" },
+    //             { text: "FAC3", value: "FAC3" },
+    //             { text: "ODM", value: "ODM" },
+    //         ],
+    //         onFilter: (value, record) => {
+    //             return record.factory.indexOf(value as string) == 0
+    //         },
+    //         sorter: (a, b) => a.factory.length - b.factory.length,
+    //         sortDirections: ['descend'],
+    //     },
+    //     {
+    //         title: "Product",
+    //         dataIndex: "product",
+    //         key: "product",
+    //         align: 'center' as 'center',
+    //     },
+    //     {
+    //         title: "WC",
+    //         dataIndex: "wcno",
+    //         key: "wcno",
+    //         align: 'center' as 'center',
 
 
-        },
-        {
-            title: "WC",
-            dataIndex: "wcno",
-            key: "wcno",
-            align: 'center' as 'center',
+    //     },
+    //     {
+    //         title: "Line Name",
+    //         dataIndex: "wcnO_NAME",
+    //         key: "wcnO_NAME",
+    //         align: 'center' as 'center',
+    //         // render: (_text: any, row: { wcno: string; lineType: string; wcnO_NAME: string; } ) => {
+    //         //     if (row.wcno.startsWith('90')) {
+    //         //         return (
+    //         //             <>
+    //         //                 {row.lineType === "MAIN" ? (
+    //         //                     <span>
+    //         //                         MAIN ASSEMBLY LINE {row.wcno.substring(2, 3)}
+    //         //                     </span>
+    //         //                 ) : (
+    //         //                     <span>
+    //         //                         FINAL LINE LINE {row.wcno.substring(2, 3)}
+    //         //                     </span>
+    //         //                 )}
+    //         //             </>
+    //         //         );
+    //         //     } else {
+    //         //         return <span>{row.wcnO_NAME}</span>
+    //         //     }
+    //         // }
+    //     },
+    //     {
+    //         title: "Completed",
+    //         key: "completed",
+    //         align: 'center' as 'center',
+    //         render: (_text: any, row: { tagCountMain: number; tagCountMainAuditee: number; tagCountFinal: number; tagCountFinalAuditee: number; lineType: string }) => {
+    //             return (
+    //                 <>
+    //                     {
+    //                         row.lineType === "MAIN" ? (
+    //                             <span>
+    //                                 {row.tagCountMain > 0
+    //                                     ? ((row.tagCountMainAuditee / row.tagCountMain) * 100).toFixed(1) + "%"
+    //                                     : "0%"}
+    //                             </span>
+    //                         ) : (
+    //                             <span>
+    //                                 {row.tagCountFinal > 0
+    //                                     ? ((row.tagCountFinalAuditee / row.tagCountFinal) * 100).toFixed(1) + "%"
+    //                                     : "0%"}
+    //                             </span>
+    //                         )
+    //                     }
+    //                 </>
+    //             );
+    //         },
+    //     },
+    //     {
+    //         title: 'BOOK A',
+    //         children: [
+    //             {
+    //                 title: "QTY",
+    //                 key: "totalBookQty",
+    //                 align: 'center' as 'center',
+    //                 render: (_text: any, row: { wcno: string; }) => {
+    //                     const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+    //                     const totalBookQty = compareRows.reduce((sum, item) => sum + (item.bookQty || 0), 0).toFixed(2);
+    //                     return <span>{totalBookQty}</span>;
+    //                 },
+    //             },
+    //             {
+    //                 title: "AMOUNT",
+    //                 key: "totalBookAmt",
+    //                 align: 'center' as 'center',
+    //                 render: (_text: any, row: { wcno: string; }) => {
+    //                     const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+    //                     const totalBookAmt = compareRows.reduce((sum, item) => sum + (item.bookAmt || 0), 0).toFixed(2);
+    //                     return <span>{totalBookAmt}</span>;
+    //                 },
+    //             },
+    //         ]
+    //     },
 
+    //     {
+    //         title: 'Auditee Check(B)',
+    //         children: [
+    //             {
+    //                 title: "Aditee Qty",
+    //                 key: "totalAuditeeQty",
+    //                 align: 'center' as 'center',
+    //                 render: (_text: any, row: { wcno: string; }) => {
+    //                     const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+    //                     const totalAuditeeQty = compareRows.reduce((sum, item) => sum + (item.auditeeQty || 0), 0).toFixed(2);
+    //                     return <span>{totalAuditeeQty}</span>;
+    //                 },
+    //             },
+    //             {
+    //                 title: "Auditee Amount",
+    //                 key: "totalAuditeeAmt",
+    //                 align: 'center' as 'center',
+    //                 render: (_text: any, row: { wcno: string; }) => {
+    //                     const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+    //                     const totalAuditeeAmt = compareRows.reduce((sum, item) => sum + (item.auditeeAmt || 0), 0).toFixed(2);
+    //                     return <span>{totalAuditeeAmt}</span>;
+    //                 },
+    //             },
+    //         ]
+    //     },
 
-        },
-        {
-            title: "Line Name",
-            dataIndex: "wcnO_NAME",
-            key: "wcnO_NAME",
-            align: 'center' as 'center',
-            // render: (_text: any, row: { wcno: string; lineType: string; wcnO_NAME: string; } ) => {
-            //     if (row.wcno.startsWith('90')) {
-            //         return (
-            //             <>
-            //                 {row.lineType === "MAIN" ? (
-            //                     <span>
-            //                         MAIN ASSEMBLY LINE {row.wcno.substring(2, 3)}
-            //                     </span>
-            //                 ) : (
-            //                     <span>
-            //                         FINAL LINE LINE {row.wcno.substring(2, 3)}
-            //                     </span>
-            //                 )}
-            //             </>
-            //         );
-            //     } else {
-            //         return <span>{row.wcnO_NAME}</span>
-            //     }
-            // }
-        },
-        {
-            title: "Completed",
-            key: "completed",
-            align: 'center' as 'center',
-            render: (_text: any, row: { tagCountMain: number; tagCountMainAuditee: number; tagCountFinal: number; tagCountFinalAuditee: number; lineType: string }) => {
-                return (
-                    <>
-                        {
-                            row.lineType === "MAIN" ? (
-                                <span>
-                                    {row.tagCountMain > 0
-                                        ? ((row.tagCountMainAuditee / row.tagCountMain) * 100).toFixed(1) + "%"
-                                        : "0%"}
-                                </span>
-                            ) : (
-                                <span>
-                                    {row.tagCountFinal > 0
-                                        ? ((row.tagCountFinalAuditee / row.tagCountFinal) * 100).toFixed(1) + "%"
-                                        : "0%"}
-                                </span>
-                            )
-                        }
-                    </>
-                );
-            },
-        },
-        {
-            title: 'BOOK A',
-            children: [
-                {
-                    title: "QTY",
-                    key: "totalBookQty",
-                    align: 'center' as 'center',
-                    render: (_text: any, row: { wcno: string; }) => {
-                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                        const totalBookQty = compareRows.reduce((sum, item) => sum + (item.bookQty || 0), 0).toFixed(2);
-                        return <span>{totalBookQty}</span>;
-                    },
-                },
-                {
-                    title: "AMOUNT",
-                    key: "totalBookAmt",
-                    align: 'center' as 'center',
-                    render: (_text: any, row: { wcno: string; }) => {
-                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                        const totalBookAmt = compareRows.reduce((sum, item) => sum + (item.bookAmt || 0), 0).toFixed(2);
-                        return <span>{totalBookAmt}</span>;
-                    },
-                },
-            ]
-        },
+    //     {
+    //         title: 'Diff.(B-A)',
+    //         children: [
+    //             {
+    //                 title: "Aditee Diff Qty",
+    //                 key: "totalAuditeeDiffQty",
+    //                 align: 'center' as 'center',
+    //                 render: (_text: any, row: { wcno: string; }) => {
+    //                     const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+    //                     const totalAuditeeDiffQty = compareRows.reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0).toFixed(2);
+    //                     return <span>{totalAuditeeDiffQty}</span>;
+    //                 },
+    //             },
+    //             {
+    //                 title: "Aditee Diff Amount",
+    //                 key: "totalAuditeeDiffAmt",
+    //                 align: 'center' as 'center',
+    //                 render: (_text: any, row: { wcno: string; }) => {
+    //                     const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
+    //                     const totalAuditeeDiffAmt = compareRows.reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0).toFixed(2);
+    //                     return <span>{totalAuditeeDiffAmt}</span>;
+    //                 },
+    //             },
+    //         ]
+    //     },
 
-        {
-            title: 'Auditee Check(B)',
-            children: [
-                {
-                    title: "Aditee Qty",
-                    key: "totalAuditeeQty",
-                    align: 'center' as 'center',
-                    render: (_text: any, row: { wcno: string; }) => {
-                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                        const totalAuditeeQty = compareRows.reduce((sum, item) => sum + (item.auditeeQty || 0), 0).toFixed(2);
-                        return <span>{totalAuditeeQty}</span>;
-                    },
-                },
-                {
-                    title: "Auditee Amount",
-                    key: "totalAuditeeAmt",
-                    align: 'center' as 'center',
-                    render: (_text: any, row: { wcno: string; }) => {
-                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                        const totalAuditeeAmt = compareRows.reduce((sum, item) => sum + (item.auditeeAmt || 0), 0).toFixed(2);
-                        return <span>{totalAuditeeAmt}</span>;
-                    },
-                },
-            ]
-        },
+    // ];
+    useEffect(() => {
+        console.log(stagCheck)
+        if (stagCheck.length) {
+            const filteredStagCheck = stagCheck
+                .filter((row) => row.factory && (row.factory.startsWith('FAC') || row.factory.startsWith('ODM')) && !row.wcno.startsWith('90'))
 
-        {
-            title: 'Diff.(B-A)',
-            children: [
-                {
-                    title: "Aditee Diff Qty",
-                    key: "totalAuditeeDiffQty",
-                    align: 'center' as 'center',
-                    render: (_text: any, row: { wcno: string; }) => {
-                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                        const totalAuditeeDiffQty = compareRows.reduce((sum, item) => sum + (item.auditeeDiffQty || 0), 0).toFixed(2);
-                        return <span>{totalAuditeeDiffQty}</span>;
-                    },
-                },
-                {
-                    title: "Aditee Diff Amount",
-                    key: "totalAuditeeDiffAmt",
-                    align: 'center' as 'center',
-                    render: (_text: any, row: { wcno: string; }) => {
-                        const compareRows = stagCompare.filter((compare) => compare.wcno === row.wcno);
-                        const totalAuditeeDiffAmt = compareRows.reduce((sum, item) => sum + (item.auditeeDiffAmt || 0), 0).toFixed(2);
-                        return <span>{totalAuditeeDiffAmt}</span>;
-                    },
-                },
-            ]
-        },
+            const expandedRows = stagCheck
+                .filter((row) => row.factory && (row.factory.startsWith('FAC') || row.factory.startsWith('ODM')) && row.wcno.startsWith('90'))
+                .map((row) =>
+                    oLineTyps.map((ln) => ({
+                        ...row,
+                        lineType: ln,
+                    }))
+                )
+                .flat();
 
-    ];
+            setDatas([...filteredStagCheck, ...expandedRows])
+        }
+    }, [stagCheck])
 
-    const filteredStagCheck = stagCheck
-        .filter((row) => row.factory && (row.factory.startsWith('FAC') || row.factory.startsWith('ODM')) && !row.wcno.startsWith('90'))
+    useEffect(() => {
+        if (Datas.length) {
+            console.log(Datas.filter(x => x.factory == 'FAC1'))
+        }
+    }, [Datas])
 
-    const expandedRows = stagCheck
-        .filter((row) => row.factory && (row.factory.startsWith('FAC') || row.factory.startsWith('ODM')) && row.wcno.startsWith('90'))
-        .map((row) =>
-            oLineTyps.map((ln) => ({
-                ...row,
-                lineType: ln,
-            }))
-        )
-        .flat();
-
-    const data = [...filteredStagCheck, ...expandedRows];
 
 
     return (
-        <>
+        <>.
+
             <Navbar />
             <head className="flex flex-col px-8 py-8">
                 <div className="flex flex-row justify-center items-cente">
@@ -332,17 +342,20 @@ function CompareSummary() {
                     </div>
                 </div> */}
                 <body className="flex w-full p-4 justify-center">
-                    <Table
+                    {
+                        Datas.length && <ViewCompareSum  data={Datas}/>
+                    }
+                    {/* <Table
                         columns={columns}
-                        dataSource={data}
-                        rowKey={(record) => record.key || record.wcno}
-                        onRow={(record) => ({
+                        dataSource={Datas}
+                        rowKey={(record: any) => record.key || record.wcno}
+                        onRow={(record: any) => ({
                             onClick: () => handleRowClick(record.wcno),
                         })}
                         pagination={false}
                         bordered
-                        scroll={{ y: 600 }}
-                    />
+                    // scroll={{ y: 600 }}
+                    /> */}
                 </body>
             </head>
         </>

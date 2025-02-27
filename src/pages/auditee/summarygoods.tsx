@@ -81,8 +81,12 @@ function SummerizeGoods() {
         setIsLoad(false);
     }
 
+    const printRef = useRef<HTMLDivElement>(null);
 
-
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: "Table_Print_A3",
+  });
     // const exportToExcel = () => {
     //     const ws = XLSX.utils.json_to_sheet(initialData);
 
@@ -241,4 +245,8 @@ function SummerizeGoods() {
 }
 
 export default SummerizeGoods
+
+function useReactToPrint(arg0: { content: () => HTMLDivElement | null; documentTitle: string; }) {
+    throw new Error("Function not implemented.");
+}
 

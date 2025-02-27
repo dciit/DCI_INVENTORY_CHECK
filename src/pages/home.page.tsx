@@ -11,6 +11,7 @@ function HomePage() {
     const navigate = useNavigate();
 
     const redux: ReduxInterface = useSelector((state: any) => state.reducer);
+    
 
     const admin = [
         { route: '/auditeecheck', title: 'แตก Part', icon: <GoldTwoTone /> },

@@ -59,7 +59,7 @@ function AuditeeScanData() {
                 } else if (oAccount.authen.role === "AUDITEE") {
                     // navigate('/home');
                 } else if (oAccount.authen.role === "AUDITOR") {
-                    // navigate(`/home`);
+                    navigate(`/home`);
                 } else {
                     navigate(`/login`);
                 }

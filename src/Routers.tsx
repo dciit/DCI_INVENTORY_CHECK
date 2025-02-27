@@ -18,42 +18,48 @@ import SumAuditeeScan from "./pages/auditee/sum.auditee .scan";
 import FinalSumAiditor from "./pages/auditor/finalsum.auditor";
 import TagHistoryAuditor from "./pages/auditor/tagauditor.history";
 import TagHistoryAuditee from "./pages/auditee/tagauditee.history";
+import Layout from "./Layout";
 
 
 
 
 
 function Routers() {
+
+
+
   return (
     <Router basename="/ivcount">
       <Routes>
-        <Route path="/*" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<HomePage />} />
-        {/* <Route path="/" element={<HomePage />} /> */}
-        <Route path="/auditeecheck" element={<AuditeeFill />} />
-        <Route path="/auditorcheck" element={<AuditorFill />} />
+        <Route element = {<Layout/>} >
+          <Route path="/*" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/home" element={<HomePage />} />
+          {/* <Route path="/" element={<HomePage />} /> */}
+          <Route path="/auditeecheck" element={<AuditeeFill />} />
+          <Route path="/auditorcheck" element={<AuditorFill />} />
 
-        <Route path="/summerizegoods" element={< SummerizeGoods />} />
-        <Route path='/gentag' element={<GenTag />} />
+          <Route path="/summerizegoods" element={< SummerizeGoods />} />
+          <Route path='/gentag' element={<GenTag />} />
 
-        <Route path="/scanqradtee" element={<AuditeeScanData />} />
-        <Route path="/sumscanqradtee" element={<SumAuditeeScan />} />
+          <Route path="/scanqradtee" element={<AuditeeScanData />} />
+          <Route path="/sumscanqradtee" element={<SumAuditeeScan />} />
 
-        <Route path="/scanqradtor" element={<AuditorScanData />} />
+          <Route path="/scanqradtor" element={<AuditorScanData />} />
 
-        <Route path="/adtesumfinal" element={<FinalSumAuditee />} />
-        <Route path="/adtedetailsum" element={<DetailSumAuditee />} />
-        <Route path="/historyauditee" element={<TagHistoryAuditee />} />
+          <Route path="/adtesumfinal" element={<FinalSumAuditee />} />
+          <Route path="/adtedetailsum" element={<DetailSumAuditee />} />
+          <Route path="/historyauditee" element={<TagHistoryAuditee />} />
 
-        <Route path="/adtorsumfinal" element={<FinalSumAiditor />} />
-        <Route path="/adtordetailsum" element={<DetailSumAuditor />} />
-        <Route path="/historyauditor" element={<TagHistoryAuditor />} />
+          <Route path="/adtorsumfinal" element={<FinalSumAiditor />} />
+          <Route path="/adtordetailsum" element={<DetailSumAuditor />} />
+          <Route path="/historyauditor" element={<TagHistoryAuditor />} />
 
-        <Route path="/comparesum" element={<CompareSummary />} />
-        <Route path="/detailcomparesum" element={<DetailCompareSum />} />
+          <Route path="/comparesum" element={<CompareSummary />} />
+          <Route path="/detailcomparesum" element={<DetailCompareSum />} />
 
-        <Route path="/scan" element={<CameraPage />} />
+          <Route path="/scan" element={<CameraPage />} />
+        </Route>
       </Routes>
     </Router>
   );

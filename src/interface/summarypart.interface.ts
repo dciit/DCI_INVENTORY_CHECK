@@ -28,7 +28,7 @@ export interface SummaryData {
 {/*conclusion auditee*/ }
 
 export interface SummatyTagCheckADTE {
-    key: string;
+    key: React.Key;
     ivSetCode: string;
     wcno: string;
     wcnO_SName: string;
@@ -63,7 +63,7 @@ export interface FacData {
 export interface CompareSum {
     ivSetCode: string;
     ym: string;
-    wcno: string;
+    wcno: number;
     wcnO_SName: string;
     wcnO_NAME: string;
     partNo: string;
