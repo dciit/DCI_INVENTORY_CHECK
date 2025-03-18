@@ -34,7 +34,6 @@ function AuditeeFill() {
         paramCodeModel: ''
     });
 
-
     const [tableData, setTableData] = useState<Master[]>([]);
     const [ProcessParts, setProcessPartsData] = useState<PropPartUsed[]>([]);
     const [oPartList, setPartList] = useState<PartListQtyInfo[]>([]);
@@ -60,7 +59,7 @@ function AuditeeFill() {
     };
 
 
-
+    //------------------get wc, modellist-------------------
     useEffect(() => {
         const fetchWcno = async () => {
             const wcnodata = await API_SELECT_WCNO();
@@ -118,7 +117,7 @@ function AuditeeFill() {
         let groupByPartlist: PropPartUsed[] = [];
 
         //------------------ Get Last Data
-        let oLastPartListDatas = await API_EXPORTPARTLIST_SELECT(redux.authen.mSetInfo?.setCode!, searchData.paramWCNO, searchData.paramModel);
+        let oLastPartListDatas = await API_EXPORTPARTLIST_SELECT('SET20250217WPDC3U608341659000001', searchData.paramWCNO, searchData.paramModel);
 
         //------------------ Set Part List Data
         let resPartlist = await API_PARTLIST_CHECK_INVENTORY(searchData.paramWCNO, searchData.paramModel);
@@ -153,7 +152,7 @@ function AuditeeFill() {
             // Set part list 
             const data: PartListQtyInfo = {
                 wcno: oItem.wcno, model: oItem.model, proc_Code: oItem.proc_Code, partNo: oItem.partNo, cm: oItem.cm, usageQty: oItem.usageQty, calQty: _calQty,
-                ivSetCode: "",
+                ivSetCode: "SET20250217WPDC3U608341659000001",
                 crBy: ""
             };
             arPartList.push(data);
@@ -231,13 +230,13 @@ function AuditeeFill() {
 
         const clonedArray = oPartList.map(item => ({ ...item }));
         clonedArray.map((item) => {
-            item.ivSetCode = redux.authen.mSetInfo?.setCode,
+            item.ivSetCode = 'SET20250217WPDC3U608341659000001',
                 item.crBy = redux.authen.sName
         })
 
         let submitinfo = await API_SAVE_INFO_INVENTORY(clonedArray)
 
-        
+
         if (submitinfo.message.trim() == "") {
             notifyOk('บันทึกเรียบร้อย');
         } else {
@@ -253,38 +252,38 @@ function AuditeeFill() {
     return (
         <>
             <Navbar />
-            <head className="flex flex-col px-8 py-8">
+            <head className="flex flex-col px-8 mt-10">
                 <div>
-                    <div className="flex flex-row justify-between items-center">
-                        <p className="w-full mr-2 py-4 border border-gray-500 rounded-2xl bg-[#] text-3xl text-black font-bold text-center">
+                    <div className="flex flex-row justify-end items-center mx-3">
+                        <p className="w-full mr-9 mx-2 py-6 border border-gray-500 rounded-2xl bg-[#D4EBF8] text-3xl text-black font-bold text-center underline">
                             หน้าแตก Part ใน Assembly Line โดย Auditee
                         </p>
                         <div className="flex flex-col gap-2">
                             <div className="flex flex-row gap-4">
-                                <span className="p-2 w-1/2 bg-[#F9F5EB] border border-black rounded-xl text-lg text-black font-semibold text-center">YYYYMM</span>
-                                <div className="p-2 w-1/2 border border-black rounded-lg text-lg text-black font-semibold text-center">
+                                <span className="p-1 w-[40%] bg-[#F9F5EB] border border-black rounded-md text-lg text-black font-semibold text-start">YYYYMM</span>
+                                <div className="p-1 w-[60%] border border-black rounded-md text-lg text-black font-semibold text-center">
                                     {redux.authen.mSetInfo?.ym}
                                 </div>
                             </div>
                             <div className="flex flex-row gap-4">
-                                <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Version</span>
-                                <div className="p-2 border border-black rounded-lg text-lg text-black font-semibold w-40">
+                                <span className="p-1 w-[40%] bg-[#F9F5EB] border border-black rounded-md text-lg text-black font-semibold">VERSION</span>
+                                <div className="p-1 border border-black rounded-md text-lg text-black font-semibold w-40">
                                     {rev}
                                 </div>
                             </div>
-                            <div className="flex flex-row gap-4">
-                                <span className="p-2 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Name</span>
+                            {/* <div className="flex flex-row gap-4">
+                                <span className="p-2 w-1/3 bg-[#F9F5EB] border border-black rounded-lg text-lg text-black font-semibold">Name</span>
                                 <div className="p-2 border border-black rounded-lg text-lg text-black font-semibold w-40">
                                     {redux.authen.sName}
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
-                    <div className="flex flex-row gap-3">
+                    <div className="flex flex-row gap-3 ml-5">
                         <div className="flex justify-between gap-2">
                             <div className="mt-7 flex justify-between gap-2">
-                                <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
+                                <span className="p-2.5 bg-yellow-50 border border-black rounded-lg text-lg text-black font-semibold text-center">W/C</span>
                                 <Select
                                     ref={refWCNO}
                                     showSearch
@@ -308,7 +307,7 @@ function AuditeeFill() {
                             </div>
 
                             <div className="mt-7 flex justify-between gap-2">
-                                <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Code Model</span>
+                                <span className="p-2.5 bg-yellow-50 border border-black rounded-lg text-lg text-black font-semibold items-center">Code Model</span>
                                 <Select
                                     ref={refCodemodel}
                                     showSearch
@@ -324,7 +323,7 @@ function AuditeeFill() {
                                 />
                             </div>
                             <div className="mt-7 flex justify-between gap-2">
-                                <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold items-center">Model Name</span>
+                                <span className="p-2.5 bg-yellow-50 border border-black rounded-lg text-lg text-black font-semibold items-center">Model Name</span>
                                 <Select
                                     ref={refModel}
                                     showSearch
@@ -359,22 +358,23 @@ function AuditeeFill() {
                             </div>
                         </div>
                     </div>
-                    {/* <Alert message="กรอกข้อมูลให้ครบก่อนทำการค้นหา" type="warning" className="w-[20%] mt-2" showIcon /> */}
                 </div>
             </head>
-            <body className="">
+            <body className="px-9">
                 {!isLoad ?
                     (
                         <>
-                            <div className="flex flex-row gap-3 justify-end mr-5">
-                                <div id="clear" className="">
-                                    <button onClick={() => navigate(`/summerizegoods`)} className="text-[#003092] border-2 border-[#003092] bg-white hover:bg-[#003092] hover:text-white focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg  px-5 py-2  text-center ">
+                            <div className="flex flex-row justify-end mr-5 ">
+                                <div id="clear">
+                                    <button 
+                                        onClick={() => navigate(`/summerizegoods`)} 
+                                        className="text-[#003092] border-2 border-[#003092] bg-white hover:bg-[#003092] hover:text-white focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg  px-5 py-2  text-center ">
                                         <ProfileTwoTone className="mr-3" />
                                         หน้าสรุปรายการ
                                     </button>
                                     <button
                                         onClick={handleSubmit}
-                                        className="text-white bg-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-lg ml-10 px-5 py-2 text-center dark:bg-green-900 dark:hover:bg-green-900 dark:focus:ring-green-900">
+                                        className="text-green-700 border-2 border-green-700 bg-white hover:bg-green-600 hover:text-white focus:outline-none focus:ring-green-600 font-medium rounded-lg text-lg ml-5 px-5 py-2 text-center">
                                         Save (บันทึกรายการ)
                                     </button>
                                 </div>
@@ -385,10 +385,10 @@ function AuditeeFill() {
                                     {/* Header */}
                                     <thead>
                                         <tr className="bg-[#F9F5EB]">
-                                            <th className="border border-gray-600 px-4 py-2" rowSpan={3}>จำนวน Part ประกอบ</th>
+                                            <th className="border border-gray-600 px-4 py-2 w-12" rowSpan={3}>จำนวน Part ประกอบ</th>
                                             <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Drawing</th>
                                             <th className="border border-gray-600 px-4 py-2" rowSpan={3}>CM</th>
-                                            <th className="border border-gray-600 px-4 py-2" rowSpan={3}>Part Name</th>
+                                            <th className="border border-gray-600 px-4 py-2 w-64" rowSpan={3}>Part Name</th>
                                             <th className="border border-gray-600 px-4 py-2" rowSpan={2}>Qty Total</th>
                                             <th className="border border-gray-600 px-4 py-2" colSpan={ProcessParts.length}>Process</th>
                                         </tr>
@@ -479,7 +479,7 @@ function AuditeeFill() {
                         </>
 
                     ) : (
-                        <div className="item-center justify-center text-center">
+                        <div className="item-center justify-center text-center mt-10">
                             <CircularProgress />
                         </div>
                     )

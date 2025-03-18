@@ -14,6 +14,7 @@ import { Wcno } from '@/interface/compressorcheck';
 import { API_SELECT_WCNO } from '@/service/partlist.service';
 import dayjs from 'dayjs';
 import { HistoryPersonAuditor } from '@/interface/gentag.interface';
+import { version } from '@/constants';
 
 
 function AuditorScanData() {
@@ -47,17 +48,17 @@ function AuditorScanData() {
         toast.success(`Ok : ${msg}`);
     };
 
-
-
     useEffect(() => {
         if (!isInitial) {
             if (oAccount != null) {
                 if (oAccount.authen.role === "ADMIN") {
 
+                } else if (oAccount.authen.role === "MANAGEMENT") {
+
                 } else if (oAccount.authen.role === "AUDITEE") {
                     navigate('/home');
                 } else if (oAccount.authen.role === "AUDITOR") {
-                    
+
                 } else {
                     navigate(`/login`);
                 }
@@ -234,45 +235,29 @@ function AuditorScanData() {
         codeReader.reset();
     };
 
-
     const fetchQR = async () => {
         const param = {
-            ivSetCode: oAccount.authen.mSetInfo?.setCode!,
-            paramYM: oAccount.authen.mSetInfo?.ym!,
+            ivSetCode: 'SET20250217WPDC3U608341659000001',
+            paramYM: '202502',
             QrCode: scannedData!
         };
 
         const qrItem = await API_TEG_SELECT_QR(param);
 
-        
-
         if (typeof qrItem == 'object' && qrItem.length) {
             setSelectedInfo(qrItem);
-
-
             if (qrItem[0].auditeeQty > 0) {
                 const auditorBy = qrItem[0].auditorBy ? qrItem[0].auditorBy : "Unknown user";
                 const auditorDate = qrItem[0].auditorDate ? new Date(qrItem[0].auditorDate) : null;
 
-                const auditeeDateFormatted = auditorDate && !isNaN(auditorDate.getTime())
-                    ? auditorDate.toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                        hour12: false,
-                    })
-                    : "Invalid date";
+                setAlertMessage(`บันทึกล่าสุดเมื่อ ${dayjs(auditorDate).format("DD/MMM/YYYY HH:mm")} โดย ${auditorBy}`);
 
-                setAlertMessage(`This QR code has already been scanned by ${auditorBy} on ${auditeeDateFormatted}`);
             } else {
                 setAlertMessage(null);
             }
         } else {
             setSelectedInfo([]);
-            setAlertMessage("Product not found");
+            setAlertMessage("ไม่พบข้อมูล QrCode นี้ในระบบ");
         }
     };
 
@@ -302,11 +287,13 @@ function AuditorScanData() {
 
     const handleSaveData = async () => {
         if (selectedInfo.length > 0) {
-            if (!selectedInfo[0].auditorQty) {
+            if (Number(selectedInfo[0].auditeeQty) < 0) {
+                // refQty.current?.focus();
                 setShowAlert(true);
                 return;
             }
         }
+
 
         const clonedArray = selectedInfo.map(item => ({
             ...item,
@@ -337,9 +324,9 @@ function AuditorScanData() {
                     setScannedData(null);
 
                 } else {
-                    notifyErr( submitInfoQR.message );
+                    notifyErr(submitInfoQR.message);
 
-                } 
+                }
             }
 
 
@@ -357,30 +344,30 @@ function AuditorScanData() {
 
 
     const handlePersonHistory = async () => {
-    
-            const param = {
-                ivSetCode: oAccount.authen.mSetInfo?.setCode!,
-                paramYM: oAccount.authen.mSetInfo?.ym!,
-                paramBy: oAccount.authen.sName!
-            }
-    
-            const oResHistory = await API_PERSON_HISTORY_AUDITOR(param);
-    
-            if (Array.isArray(oResHistory) && oResHistory.length) {
-                setHistory(oResHistory);
-                console.log(oResHistory);
-            } else {
-                setHistory([]);
-                setAlertMessage("ไม่พบประวัติการสแกนนี้ในระบบ");
-            }
-        };
+
+        const param = {
+            ivSetCode: oAccount.authen.mSetInfo?.setCode!,
+            paramYM: oAccount.authen.mSetInfo?.ym!,
+            paramBy: oAccount.authen.sName!
+        }
+
+        const oResHistory = await API_PERSON_HISTORY_AUDITOR(param);
+
+        if (Array.isArray(oResHistory) && oResHistory.length) {
+            setHistory(oResHistory);
+            console.log(oResHistory);
+        } else {
+            setHistory([]);
+            setAlertMessage("ไม่พบประวัติการสแกนนี้ในระบบ");
+        }
+    };
 
     const tabs = [{
         label: `QRCode`, key: '0', children:
             <div className='flex flex-col justify-center'>
                 {isScanning && (
                     <div className='flex justify-center'>
-                        <video ref={videoRef} style={{ width: "70%" }} />
+                        <video ref={videoRef} style={{ width: "20%" }} />
                         {error && <p style={{ color: "red" }}>Error: {error}</p>}
                     </div>
                 )}
@@ -399,7 +386,7 @@ function AuditorScanData() {
     }, {
         label: `Maual`, key: '1', children:
             <div className='border border-solid border-black rounded-md p-1'>
-                <div className='flex flex-row justify-center mt-2'>
+                <div className='flex flex-row justify-center mt-3'>
                     <div className='w-1/3 text-center font-semibold'>WCNO</div>
                     <div>
                         <Select
@@ -456,181 +443,187 @@ function AuditorScanData() {
                 </div>
             </div>, icon: <Icon />
     }, {
-            label: `ประวัติ (History)`, key: '3', children:
-                <div className='flex-col px-8 py-8'>
-                    <div className="overflow-x-auto max-h-[700px]">
-                        <span className='text-md'>จำนวนทั้งหมด {history.length} รายการ</span>
-                        <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
-                            <thead>
-                                <tr className="bg-[#F9F5EB]">
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-md" >WC</th>
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >Part</th>
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >Qty</th>
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >By</th>
+        label: `ประวัติ (History)`, key: '3', children:
+            <div className='flex-col px-8 py-8'>
+                <div className="overflow-x-auto max-h-[700px]">
+                    <span className='text-md'>จำนวนทั้งหมด {history.length} รายการ</span>
+                    <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
+                        <thead>
+                            <tr className="bg-[#F9F5EB]">
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-md" >WC</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >Part</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >Qty</th>
+                                <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {history && history.map((item, index) => (
+                                // oLineTyps.map((ln) => (
+                                <tr key={index} style={{ cursor: 'pointer' }}
+                                    className="border-gray-200 hover:bg-gray-100 bg-white ">
+                                    <td className="border border-gray-600 px-4 py-2 text-center">{item.wcno}</td>
+                                    <td className="border border-gray-600 px-4 py-2 text-left">{item.partNo} {item.cm} ({item.tagNo})<br />{item.partName}</td>
+                                    <td className="border border-gray-600 px-4 py-2 text-right">{item.auditorQty}</td>
+                                    <td className="border border-gray-600 px-4 py-2 text-center">{
+                                        item.auditorBy != "" ? (
+                                            <>
+                                                {item.auditorBy}<br />{dayjs(item.auditorDate).format("YYYY-MM-DD HH:mm")}
+                                            </>
+                                        ) : ``}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {history && history.map((item, index) => (
-                                    // oLineTyps.map((ln) => (
-                                    <tr key={index} style={{ cursor: 'pointer' }}
-                                        className="border-gray-200 hover:bg-gray-100 bg-white ">
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{item.wcno}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-left">{item.partNo} {item.cm} ({item.tagNo})<br/>{item.partName}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-right">{item.auditorQty}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{
-                                            item.auditorBy != "" ? (
-                                                <>
-                                                    {item.auditorBy}<br />{dayjs(item.auditorDate).format("YYYY-MM-DD HH:mm")}
-                                                </>
-                                            ) : ``}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-        }]
+            </div>
+    }]
 
 
     return (
         <>
             <Navbar />
-            <div className="flex flex-col min-h-screen p-2 bg-green-100">
-                <div className='text-center text-md font-bold'>
-                    AUDITOR บันทึกข้อมูล
-                </div>
-                <Tabs
-                    defaultActiveKey="0"
-                    centered
-                    items={tabs}
-                    onTabClick={onTabClick}
-                />
-                <hr className='py-3' />
+            <div className="min-h-screen bg-green-100">
+                <head className='flex flex-col p-2'>
+                    <div className='text-center text-md font-bold'>
+                        AUDITOR บันทึกข้อมูล V{version}
+                    </div>
+                    <Tabs
+                        defaultActiveKey="0"
+                        centered
+                        items={tabs}
+                        onTabClick={onTabClick}
+                    />
+                    <hr className='py-3' />
+                </head>
 
-                {selectedInfo && selectedInfo.length > 0 ? (
-                    selectedInfo.map((item, idx) => (
-                        <div className="flex flex-col items-center justify-center gap-3 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mt-2" key={idx}>
-                            <div className="container w-full rounded-xl border border-black shadow-lg p-2 text-center bg-[#FBFBFB]">
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-row mt-3 gap-5">
-                                        <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
-                                            YYYYMM
-                                        </span>
-                                        <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
-                                            {item.ym}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-row mt-3 gap-5">
-                                        <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
-                                            WC
-                                        </span>
-                                        <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
-                                            {item.wcno}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-row mt-3 gap-5">
-                                        <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
-                                            LINE
-                                        </span>
-                                        <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
-                                            {item.lineType === "MAIN" || item.lineType === "FINAL"
-                                                ? `${item.lineType} LINE ${item.wcno.substring(2, 3)}`
-                                                : (item.lineType === "EXPLODE") ? `แตก Part LINE  ${item.wcno.substring(2, 3)}` : item.wcnO_NAME}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-row gap-5 mt-3">
-                                        <div className="w-1/2 items-center p-1 border border-black rounded-md bg-white text-md text-black font-semibold">
-                                            DRAWING NO
-                                        </div>
-                                        <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-3/4">
-                                            {item.partNo}
-                                        </div>
-                                        <div className="w-1/5 items-start p-1 border border-black rounded-md bg-[#E8F9FF] text-md text-black font-semibold">
-                                            {item.cm}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-row mt-3 gap-5">
-                                        <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
-                                            PART NAME
-                                        </span>
-                                        <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
-                                            {item.partName}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-row mt-4 gap-5">
-                                        <div className="w-1/2 items-center p-1 border border-black rounded-md bg-white text-md text-black font-semibold">
-                                            QTY
-                                        </div>
-                                        <Input
-                                            type="number"
-                                            id="qty"
-                                            placeholder="Enter QTY to inspect"
-                                            className="w-3/4 border border-black hover:border-black bg-[#FFF5D7] hover:bg-[#FFF5D7]"
-                                            value={item.auditorQty}
-                                            autoFocus
-                                            onChange={(e) => {
-                                                const inputValue = e.target.value.trim();
-                                                let clone: InventoryInfo[] = selectedInfo;
-                                                clone[0].auditorQty = Number(inputValue);
 
-                                                if (unitNotDigit.includes(item.whum.toUpperCase().trim())) {
-                                                    if (inputValue.includes('.')) { return; }
-                                                } else {
-                                                    if (inputValue.includes('.')) {
+                <div className='flex justify-center items-center'>
+                    {selectedInfo && selectedInfo.length > 0 ? (
+                        selectedInfo.map((item, idx) => (
+                            <div className="flex justify-center gap-3 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mt-2" key={idx}>
+                                <div className="container w-full mx-3 sm:w-[80%] md:w-[100%] rounded-xl border border-black shadow-lg p-2 text-center bg-[#FBFBFB]">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex flex-row mt-3 gap-5">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                                YYYYMM
+                                            </span>
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
+                                                {item.ym}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-row mt-3 gap-5">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                                WC
+                                            </span>
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
+                                                {item.wcno}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-row mt-3 gap-5">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                                LINE
+                                            </span>
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
+                                                {item.lineType === "MAIN" || item.lineType === "FINAL"
+                                                    ? `${item.lineType} LINE ${item.wcno.substring(2, 3)}`
+                                                    : (item.lineType === "EXPLODE") ? `แตก Part LINE  ${item.wcno.substring(2, 3)}` : item.wcnO_NAME}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-row gap-5 mt-3">
+                                            <div className="w-1/2 items-center p-1 border border-black rounded-md bg-white text-md text-black font-semibold">
+                                                DRAWING NO
+                                            </div>
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-3/4">
+                                                {item.partNo}
+                                            </div>
+                                            <div className="w-1/5 items-start p-1 border border-black rounded-md bg-[#E8F9FF] text-md text-black font-semibold">
+                                                {item.cm}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-row mt-3 gap-5">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                                PART NAME
+                                            </span>
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
+                                                {item.partName}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-row mt-4 gap-5">
+                                            <div className="w-1/2 items-center p-1 border border-black rounded-md bg-white text-md text-black font-semibold">
+                                                QTY
+                                            </div>
+                                            <Input
+                                                type="number"
+                                                id="qty"
+                                                placeholder="Enter QTY to inspect"
+                                                className="w-3/4 border border-black hover:border-black bg-[#FFF5D7] hover:bg-[#FFF5D7]"
+                                                value={item.auditorQty}
+                                                autoFocus
+                                                onChange={(e) => {
+                                                    const inputValue = e.target.value.trim();
+                                                    let clone: InventoryInfo[] = selectedInfo;
+                                                    clone[0].auditorQty = inputValue;
 
-                                                        if (inputValue.split('.')[1].length > 2) {
-                                                            return;
-                                                        }
+                                                    if (unitNotDigit.includes(item.whum.toUpperCase().trim())) {
+                                                        if (inputValue.includes('.')) { return; }
+                                                    } else {
+                                                        if (inputValue.includes('.')) {
 
-                                                        if (inputValue.split('.').length > 2) {
-                                                            return;
+                                                            if (inputValue.split('.')[1].length > 2) {
+                                                                return;
+                                                            }
+
+                                                            if (inputValue.split('.').length > 2) {
+                                                                return;
+                                                            }
                                                         }
                                                     }
-                                                }
 
-                                                if (Number(inputValue) > 1000000) { return; }
+                                                    if (Number(inputValue) > 1000000) { return; }
 
-                                                setSelectedInfo([...clone])
-                                            }}
-                                        />
-                                        <div className="w-1/5 items-start p-1 border border-black rounded-md bg-[#E8F9FF] text-md text-black font-semibold">
-                                            {item.whum}
+                                                    setSelectedInfo([...clone])
+                                                }}
+                                            />
+                                            <div className="w-1/5 items-start p-1 border border-black rounded-md bg-[#E8F9FF] text-md text-black font-semibold">
+                                                {item.whum}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div>
-                                    {showAlert && (
-                                        <Alert
-                                            className="mt-4"
-                                            message="Please input the values for this drawing"
-                                            type="warning"
-                                            showIcon
-                                            closable
-                                            onClose={() => setShowAlert(false)}
-                                        />
-                                    )}
+                                    <div>
+                                        {showAlert && (
+                                            <Alert
+                                                className="mt-4"
+                                                message="Please input the values for this drawing"
+                                                type="warning"
+                                                showIcon
+                                                closable
+                                                onClose={() => setShowAlert(false)}
+                                            />
+                                        )}
 
-                                    {alertMessage && (
-                                        <Alert className="mt-5 h-10" message={alertMessage} type="warning" showIcon />
-                                    )}
+                                        {alertMessage && (
+                                            <Alert className="mt-5 h-10" message={alertMessage} type="warning" showIcon />
+                                        )}
 
-                                    <div id="action" className="flex items-center justify-center pt-[10px] mt-6">
-                                        <button
-                                            onClick={handleSaveData}
-                                            type="submit"
-                                            className="text-black bg-[#D4EBF8] hover:bg-[#D4EBF8] focus:ring-2 focus:outline-none focus:ring-[#D4EBF8] font-semibold rounded-lg border-black text-lg w-full sm:w-auto px-36 py-3 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900"
-                                        >
-                                            บันทึก
-                                        </button>
+                                        <div id="action" className="flex items-center justify-center pt-[10px] mt-6">
+                                            <button
+                                                onClick={handleSaveData}
+                                                type="submit"
+                                                className="text-black bg-[#D4EBF8] hover:bg-[#D4EBF8] focus:ring-2 focus:outline-none focus:ring-[#D4EBF8] font-semibold rounded-lg border-black text-lg w-full sm:w-auto px-36 py-3 text-center dark:bg-blue-900 dark:hover:bg-blue-900 dark:focus:ring-blue-900"
+                                            >
+                                                บันทึก
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))
-                ) : scannedData ? (
-                    <p className="mt-4 text-red-500">ไม่พบข้อมูล QrCode นี้ในระบบ</p>
-                ) : null}
+                        ))
+                    ) : scannedData ? (
+                        <p className="mt-4 text-red-500">ไม่พบข้อมูล QrCode นี้ในระบบ</p>
+                    ) : null}
+                </div>
+
                 <ToastContainer
                     position="top-right"
                     autoClose={3000}

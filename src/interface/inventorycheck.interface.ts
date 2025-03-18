@@ -17,11 +17,11 @@ export interface InventoryInfo {
     route: string;
     crBy: string;
     crDate: string;
-    auditeeQty: number,    
+    auditeeQty: string,    
     auditeeBy: string,    
     auditeeDate: string,    
     auditeeStatus: string,    
-    auditorQty: number,    
+    auditorQty: string,    
     auditorBy: string,    
     auditorDate: string,    
     auditorStatus: string,    

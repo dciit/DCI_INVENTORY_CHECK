@@ -2,16 +2,18 @@
 // import { TagInfo } from "@/interface/gentag.interface";
 import Navbar from "@/components/main/navbar";
 import { ReduxInterface } from "@/interface/main.interface";
-import { DataType, FacData, SummatyTagCheckADTE } from "@/interface/summarypart.interface"
+import { DataType, SummaryTagCheckADTE, TagData } from "@/interface/summarypart.interface"
 import { API_TEG_SUMCHECK_ADTE } from "@/service/conclusion.service";
 import { API_TEG_SELECT } from "@/service/tag.service";
-import { Button, RefSelectProps, Select, Table } from "antd";
-import { useEffect, useRef, useState } from "react"
+import { Button, Table, TableProps } from "antd";
+import { useEffect, useState } from "react"
 import { TbReportSearch } from "react-icons/tb";
 import { useSelector } from "react-redux";
 import DetailSumAuditee from "./detailsum.auditee";
 import { CircularProgress } from "@mui/material";
-interface PropSummary {
+
+
+export interface PropSummary {
     tag: number;
     tagCount: number;
 }
@@ -22,26 +24,25 @@ function FinalSumAuditee() {
     })
     const oAccount: ReduxInterface = useSelector((state: any) => state.reducer)
 
-    const [tagCheck, setTagCheck] = useState<SummatyTagCheckADTE[]>([])
+    const [tagCheck, setTagCheck] = useState<SummaryTagCheckADTE[]>([])
     const [factory, setFactoryData] = useState<String[]>([]);
 
-    const [searchData, setSearchData] = useState<FacData>({
-        factory: ''
-    });
-
-    const refFAC = useRef<RefSelectProps>(null)
     const oLineTyps = ['MAIN', 'FINAL', 'EXPLODE'];
 
     const [isModalPart, setIsModalPart] = useState<boolean>(false);
-    const [TagData, setTagData] = useState<any[]>([]);
+    const [TagData, setTagData] = useState<TagData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [_filters, setFilters] = useState<string[]>([])
     let once: boolean = true;
+
+
     const fetchCheckTag = async () => {
+        setLoading(true)
         try {
             let checktag = await API_TEG_SUMCHECK_ADTE(
-                oAccount.authen.mSetInfo?.setCode!,
+                'SET20250217WPDC3U608341659000001',
                 oAccount.authen.sName!,
-                oAccount.authen.mSetInfo?.ym!
+                '202502'
             );
             let clone: DataType[] = checktag.filter((row: DataType) => row.factory && (row.factory.startsWith("FAC") || row.factory.startsWith("ODM")) && row.wcno.toString().startsWith("90"))
             clone.map((row: DataType) => {
@@ -76,12 +77,25 @@ function FinalSumAuditee() {
             }
         } catch (error) {
         }
+        setLoading(false)
     };
+
     useEffect(() => {
         let tagSum: number = tagCheck.reduce((sum, item) => sum + item.tagCount, 0)
         let tagCountSum: number = tagCheck.reduce((sum, item) => sum + item.tagCountAuditee, 0)
         setSummary({ tag: tagSum, tagCount: tagCountSum })
     }, [tagCheck])
+
+    // useEffect(() => {
+    //     fetchCheckTag(); 
+    
+    //     const interval = setInterval(() => {
+    //       fetchCheckTag(); 
+    //     }, 10000);
+    
+    //     return () => clearInterval(interval); 
+    //   }, []);
+
     useEffect(() => {
         if (once) {
             setLoading(false);
@@ -89,15 +103,16 @@ function FinalSumAuditee() {
         }
     }, [factory])
 
-    const handleModalPart = async (data: SummatyTagCheckADTE) => {
+    const handleModalPart = async (data: SummaryTagCheckADTE) => {
         setTagData([]);
         setIsModalPart(true);
         const resTagData = await API_TEG_SELECT(
-            oAccount.authen.mSetInfo?.setCode!,
-            oAccount.authen.mSetInfo?.ym!,
+            'SET20250217WPDC3U608341659000001',
+            '202502',
             data.wcno
         );
         setTagData(resTagData);
+        console.log('data', resTagData)
     }
 
     interface PropFilter {
@@ -115,33 +130,42 @@ function FinalSumAuditee() {
     useEffect(() => {
         fetchCheckTag();
     }, []);
+
+
     const columns = [
         {
-            title: 'Factory',
+            title: <div className="text-center">FACTORY</div>,
             dataIndex: 'factory',
             key: 'factory',
+            filters: CreateFilterChoice(tagCheck, 'factory'),
+            onFilter: (value: any, record: any) => record.factory.indexOf(value as string) === 0
 
         },
         {
-            title: 'Product',
+            title: <div className="text-center">PRODUCT</div>,
             dataIndex: 'product',
             key: 'product',
-            sorter: (a: any, b: any) => a.product.length - b.product.length,
+            filters: CreateFilterChoice(tagCheck, 'product'),
+            onFilter: (value: any, record: any) => record.product.indexOf(value as string) === 0,
+            // sorter: (a: any, b: any) => a.product.length - b.product.length,
         },
         {
             title: 'WC',
             dataIndex: 'wcno',
             key: 'wcno',
             filters: CreateFilterChoice(tagCheck, 'wcno'),
-            onFilter: (value: any, record: any) => record.wcno.indexOf(value as string) === 0,
+            onFilter: (value: any, record: any) => {
+                setFilters(value)
+                return record.wcno.indexOf(value as string) === 0
+            },
         },
         {
-            title: 'LineName',
+            title: <div className="text-center">LINE NAME</div>,
             dataIndex: 'wcnO_NAME',
             key: 'wcnO_NAME',
         },
         {
-            title: 'Auditee Check',
+            title: 'AUDITEE CHECK',
             children: [
                 {
                     title: "จำนวนที่ปริ๊นท์ ",
@@ -150,7 +174,7 @@ function FinalSumAuditee() {
                     align: 'right' as 'right',
                     sorter: (a: any, b: any) => a.tagCount - b.tagCount,
                     render: (_text: any, row: { tagCount: number, tagCountAuditee: number }) => {
-                        return <span className={`font-semibold text-sky-600 `}>{row.tagCount}</span>;
+                        return <span className={`font-semibold text-sky-600 `}>{row.tagCount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
                     },
                 },
                 {
@@ -164,7 +188,9 @@ function FinalSumAuditee() {
                     ],
                     onFilter: (value: any, record: any) => value == 'COMPLETED' ? record.tagCountAuditee == record.tagCount : record.tagCountAuditee != record.tagCount,
                     render: (_text: any, row: { tagCount: number, tagCountAuditee: number }) => {
-                        return <span className={`font-semibold ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>{row.tagCountAuditee}</span>;
+                        return <span className={`font-semibold ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>
+                            {row.tagCountAuditee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>;
                     },
                 },
                 {
@@ -174,17 +200,19 @@ function FinalSumAuditee() {
                     align: 'right' as 'right',
                     sorter: (a: any, b: any) => (a.tagCount - a.tagCountAuditee) - (b.tagCount - b.tagCountAuditee),
                     render: (_text: any, row: { tagCount: number, tagCountAuditee: number }) => {
-                        return <span className={`font-semibold ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>{row.tagCount - row.tagCountAuditee}</span>;
+                        return <span className={`font-semibold ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>
+                            {(row.tagCount - row.tagCountAuditee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>;
                     },
                 }
             ]
         },
         {
-            title: 'Completed',
-            align: 'right' as 'right',
-            render: (_text: any, row: SummatyTagCheckADTE) => {
-                return <div className='flex items-center justify-between text-right'>
-                    <span className={`font-semibold text-right ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>{row.tagCount > 0 ? ((row.tagCountAuditee / row.tagCount) * 100).toFixed(1) + "%" : "0%"}</span>
+            title: 'COMPLETED',
+            align: 'center' as 'center',
+            render: (_text: any, row: SummaryTagCheckADTE) => {
+                return <div className='flex items-center justify-around text-right'>
+                    <span className={`font-semibold ${row.tagCountAuditee < row.tagCount ? 'text-red-500' : (row.tagCountAuditee == row.tagCount ? 'text-green-500' : '')}`}>{row.tagCount > 0 ? ((row.tagCountAuditee / row.tagCount) * 100).toFixed(1) + "%" : "0%"}</span>
                     <Button type="primary" size="small" icon={<TbReportSearch />} onClick={() => handleModalPart(row)} >
                         แสดงรายการ</Button>
                 </div>;
@@ -192,70 +220,91 @@ function FinalSumAuditee() {
         },
     ];
 
-    // const sumTagQty = checktag.reduce((sum: any, item: any) => sum + (item.tagCount || 0), 0);
-    // const sumTagCountAdt = checktag.reduce((sum: any, item: any) => sum + (item.tagCountAuditee || 0), 0);
-    // const sumTagCountAdtrm = checktag.reduce((sum: any, item: any) =>
-    //     sum + ((item.tagCount || 0) - (item.tagCountAuditee || 0)), 0
-    // );
+    const onChange: TableProps<SummaryTagCheckADTE>['onChange'] = (_pagination, filters, _sorter, _extra) => {
+        let clone = [...tagCheck];
+        let tagSum: number = 0;
+        let tagCountSum: number = 0;
+
+        const filterWcno = filters.wcno as string[] | null;
+        if (filterWcno != null) {
+            clone = clone.filter(x => filterWcno.includes(x.wcno))
+            tagSum = clone.reduce((sum, item) => sum + item.tagCount, 0)
+            tagCountSum = clone.reduce((sum, item) => sum + item.tagCountAuditee, 0)
+        } else {
+            tagSum = clone.reduce((sum, item) => sum + item.tagCount, 0)
+            tagCountSum = clone.reduce((sum, item) => sum + item.tagCountAuditee, 0)
+        }
+        const filterFac = filters.factory as string[] | null;
+        if (filterFac != null) {
+            clone = clone.filter(x => filterFac.includes(x.factory))
+            tagSum = clone.reduce((sum, item) => sum + item.tagCount, 0)
+            tagCountSum = clone.reduce((sum, item) => sum + item.tagCountAuditee, 0)
+        } else {
+            tagSum = clone.reduce((sum, item) => sum + item.tagCount, 0)
+            tagCountSum = clone.reduce((sum, item) => sum + item.tagCountAuditee, 0)
+        }
+        const FilterProduct = filters.product as string[] | null;
+        if (FilterProduct != null) {
+            clone = clone.filter(x => FilterProduct.includes(x.product))
+            tagSum = clone.reduce((sum, item) => sum + item.tagCount, 0)
+            tagCountSum = clone.reduce((sum, item) => sum + item.tagCountAuditee, 0)
+        } else {
+            tagSum = clone.reduce((sum, item) => sum + item.tagCount, 0)
+            tagCountSum = clone.reduce((sum, item) => sum + item.tagCountAuditee, 0)
+        }
 
 
+        setSummary({ tag: tagSum, tagCount: tagCountSum })
+    };
 
     return (
         <>
             <Navbar />
-            <head className="flex flex-col px-8 py-8">
-                <div className="flex flex-row justify-center items-cente">
-                    <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#E1EACD] text-3xl text-black font-bold text-center">
+            <head className="flex flex-col px-16 py-8">
+                <div className="flex flex-row justify-center items-center">
+                    <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#D4EBF8] text-3xl text-black font-bold text-center">
                         รายการนับวัตถุดิบของแต่ละสายการผลิต โดย Auditee
                         <p className=" mt-2 text-2xl font-light"></p>
                     </p>
                 </div>
-                <div className="mt-7 flex justify-start gap-2 ml-4">
-                    <span className="p-2.5 bg-[#003092] border border-black rounded-md text-lg text-white font-semibold text-center">Factory</span>
-                    <Select
-                        ref={refFAC}
-                        showSearch
-                        placeholder="Select a factory"
-                        optionFilterProp="label"
-                        className="w-52 h-14 border rounded-lg text-black"
-                        value={searchData.factory}
-                        onChange={(value) => setSearchData({ ...searchData, factory: value })}
-                        options={factory.map((fac) => ({ value: fac, label: fac }))}
-                    />
-                </div>
             </head>
-            <body className="flex w-full p-4 justify-center">
-
+            <body className="flex p-4 justify-center">
                 {
-                    loading ? <div><CircularProgress /></div> : <div className='w-[100%] px-[5%]'>
-                        <Table
-                            style={{ width: "100%" }}
-                            className="border"
-                            dataSource={tagCheck.filter(row => !row.wcnO_NAME.includes('MAIN ASSEMBLY AND FINAL'))}
-                            columns={columns}
-                            summary={() => {
-                                return <Table.Summary.Row className="font-bold">
-                                    <Table.Summary.Cell colSpan={4} index={0} className="text-right">
-                                        Total
-                                    </Table.Summary.Cell>
-                                    <Table.Summary.Cell index={0} className="text-right">
-                                        {summary.tag.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </Table.Summary.Cell>
-                                    <Table.Summary.Cell index={0} className="text-right">
-                                        {summary.tagCount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </Table.Summary.Cell>
-                                    <Table.Summary.Cell index={0} className="text-right">
-                                        {/* {sumTagCountAdtrm.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} */}
-                                    </Table.Summary.Cell>
+                    loading ? <div className="flex justify-center items-center"><CircularProgress /></div> :
+                        <div className='w-[100%] px-[5%]'>
+                            <Table
+                                style={{ width: "100%" }}
+                                className="border"
+                                dataSource={tagCheck.filter(row => !row.wcnO_NAME.includes('MAIN ASSEMBLY AND FINAL'))}
+                                columns={columns}
+                                onChange={onChange}
+                                summary={() => {
+                                    return <Table.Summary.Row className="font-bold bg-yellow-50">
+                                        <Table.Summary.Cell colSpan={4} index={0} className="text-right">
+                                            Total
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell index={0} className="text-right">
+                                            {summary.tag.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell index={0} className="text-right">
+                                            {summary.tagCount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell index={0} className="text-right">
+                                            {(summary.tag - summary.tagCount)?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell colSpan={2} index={2}>
 
-                                </Table.Summary.Row>
-                            }}
-                        />
-                    </div>
+                                        </Table.Summary.Cell>
+                                    </Table.Summary.Row>
+                                }}
+                            />
+                        </div>
                 }
 
             </body>
             <DetailSumAuditee open={isModalPart} close={setIsModalPart} tagData={TagData} />
+
+
         </>
 
 

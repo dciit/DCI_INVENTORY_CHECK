@@ -6,7 +6,7 @@ import { ReduxInterface } from '@/interface/main.interface';
 import { useSelector } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+// import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import { useNavigate } from 'react-router-dom';
 import dayjs from "dayjs";
 import Navbar from '@/components/main/navbar';
@@ -15,9 +15,10 @@ import { Wcno } from '@/interface/compressorcheck';
 import { API_SELECT_WCNO } from '@/service/partlist.service';
 import { HistoryPersonAuditee } from '@/interface/gentag.interface';
 import { version } from '@/constants';
+import QrScanner from "qr-scanner";
 
 
-function AuditeeScanData() {
+function AuditeeScanDatatest() {
 
     const navigate = useNavigate();
     const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
@@ -33,8 +34,10 @@ function AuditeeScanData() {
     const [selectedInfo, setSelectedInfo] = useState<InventoryInfo[]>([]);
     const [history, setHistory] = useState<HistoryPersonAuditee[]>([]);
     const [isScanning, setIsScanning] = useState(false);
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoRef = useRef(null);
     const [error, setError] = useState<string | null>(null);
+    //  const videoElementRef = useRef(null);
+    let qrScanner: QrScanner | null = null;
 
     const [arWCNO, setarWCNO] = useState<Wcno[]>([]);
     const [srcWCNO, setSrcWCNO] = useState<string>("");
@@ -203,47 +206,42 @@ function AuditeeScanData() {
 
     useEffect(() => {
         if (isScanning) {
-            const codeReader = new BrowserMultiFormatReader();
-            let stream: MediaStream | null = null;
+            const video = videoRef.current;
+            if (!video) return;
 
-            navigator.mediaDevices
-                .getUserMedia({ video: { facingMode: "environment" } })
-                .then((s) => {
-                    stream = s;
-                    if (videoRef.current) {
-                        videoRef.current.srcObject = stream;
-                        videoRef.current.play();
-                    }
-
-                    codeReader.decodeFromVideoDevice(null, videoRef.current!, (result, err) => {
-                        if (result) {
-                            handleScan(result.getText(), stream, codeReader);
-                        }
-                        if (err && !(err instanceof NotFoundException)) setError(err.message);
-                    });
-                })
-                .catch((err) => setError(err.message));
-
-            return () => {
-                if (stream) {
-                    stream.getTracks().forEach((track) => track.stop());
+            qrScanner = new QrScanner(
+                video,
+                (result) => {
+                    handleScan(result.data);
+                },
+                {
+                    returnDetailedScanResult: true,
+                    highlightScanRegion: true,
+                    highlightCodeOutline: true,
                 }
-                codeReader.reset();
-            };
+            );
+
+            qrScanner
+                .start()
+                .catch((err) => setError(err.message));
         }
+
+        return () => {
+            if (qrScanner) {
+                qrScanner.stop();
+                qrScanner.destroy();
+            }
+        };
     }, [isScanning]);
 
-    const handleScan = (result: string, stream: MediaStream | null, codeReader: BrowserMultiFormatReader) => {
+    const handleScan = (result: string) => {
         const cleanedStr = result.replace(/^"|"$/g, '');
         setScannedData(cleanedStr);
         setIsScanning(false);
-
-        // ปิดกล้องหลังจากสแกนสำเร็จ
-        if (stream) {
-            stream.getTracks().forEach((track) => track.stop());
-        }
-        codeReader.reset();
+        console.log(cleanedStr)
     };
+
+
 
 
     const fetchQR = async () => {
@@ -255,7 +253,7 @@ function AuditeeScanData() {
         };
 
         const qrItem = await API_TEG_SELECT_QR(param);
-        console.timeEnd("fetchQR Time");
+         console.timeEnd("fetchQR Time");
 
         if (typeof qrItem == 'object' && qrItem.length) {
             setSelectedInfo(qrItem);
@@ -276,6 +274,9 @@ function AuditeeScanData() {
             setAlertMessage("ไม่พบข้อมูล QrCode นี้ในระบบ");
         }
     };
+
+
+    console.log(selectedInfo)
 
     useEffect(() => {
         if (scannedData) {
@@ -298,7 +299,7 @@ function AuditeeScanData() {
             wcno = srcWCNO;
         }
 
-        const tempQr = `${oAccount.authen.mSetInfo?.setCode}|${oAccount.authen.mSetInfo?.ym}|${wcno}|${line}|${srcPartNo}|${srcCM}`;
+        const tempQr = `'SET20250217WPDC3U608341659000001'|'202502'|${wcno}|${line}|${srcPartNo}|${srcCM}`;
 
         setScannedData(tempQr);
     };
@@ -390,9 +391,10 @@ function AuditeeScanData() {
         label: `QRCode`, key: '0', children:
             <div className='flex flex-col justify-center'>
                 {isScanning && (
-                    <div className='flex justify-center'>
+                    <div className="flex justify-center">
                         <video ref={videoRef} style={{ width: "20%" }} />
                         {error && <p style={{ color: "red" }}>Error: {error}</p>}
+                        <p className="scannedText">SCANNED: {scannedData}</p>
                     </div>
                 )}
                 <br />
@@ -501,28 +503,26 @@ function AuditeeScanData() {
     return (
         <>
             <Navbar />
-            <div className='bg-sky-50 min-h-screen'>
-                <head className='flex flex-col  p-2'>
-                    <div className='text-center text-md font-bold'>
-                        AUDITEE บันทึกข้อมูล V{version}
-                    </div>
-                    <Tabs
-                        defaultActiveKey="0"
-                        centered
-                        items={tabs}
-                        onTabClick={onTabClick}
-                    />
-                    <hr className='py-3 border-gray-300 mt-4' />
-                </head>
+            <div className="flex flex-col min-h-screen p-2 bg-sky-50">
+                <div className='text-center text-md font-bold'>
+                    AUDITEE บันทึกข้อมูล V{version}
+                </div>
+                <Tabs
+                    defaultActiveKey="0"
+                    centered
+                    items={tabs}
+                    onTabClick={onTabClick}
+                />
+                <hr className='py-3 border-gray-300 mt-4' />
 
-                <div className="flex justify-center items-center">
+                <div className='flex justify-center items-center'>
                     {selectedInfo && selectedInfo.length > 0 ? (
                         selectedInfo.map((item, idx) => (
                             <div className="flex justify-center gap-3 w-full sm:w-3/4 md:w-2/3 lg:w-1/2" key={idx}>
                                 <div className="container w-full mx-3 sm:w-[80%] md:w-[100%] rounded-xl border border-black shadow-lg p-2 text-center bg-[#FBFBFB]">
                                     <div className="flex flex-col gap-3">
                                         <div className="flex flex-row mt-3 gap-5">
-                                            <span className="w-1/2 p-2 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
                                                 YYYYMM
                                             </span>
                                             <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
@@ -530,45 +530,45 @@ function AuditeeScanData() {
                                             </div>
                                         </div>
                                         <div className="flex flex-row mt-3 gap-5">
-                                            <span className="w-1/2 p-2 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
                                                 WC
                                             </span>
-                                            <div className="bg-[#E8F9FF] p-2 border border-black rounded-md text-md text-black font-semibold text-start w-full">
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
                                                 {item.wcno}
                                             </div>
                                         </div>
                                         <div className="flex flex-row mt-3 gap-5">
-                                            <span className="w-1/2 p-2 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
                                                 LINE
                                             </span>
-                                            <div className="bg-[#E8F9FF] p-2 border border-black rounded-md text-md text-black font-semibold text-start w-full">
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
                                                 {item.lineType === "MAIN" || item.lineType === "FINAL"
                                                     ? `${item.lineType} LINE ${item.wcno.substring(2, 3)}`
                                                     : (item.lineType === "EXPLODE") ? `แตก Part LINE  ${item.wcno.substring(2, 3)}` : item.wcnO_NAME}
                                             </div>
                                         </div>
                                         <div className="flex flex-row gap-5 mt-3">
-                                            <div className="w-1/2 items-center p-2 border border-black rounded-md bg-white text-md text-black font-semibold">
+                                            <div className="w-1/2 items-center p-1 border border-black rounded-md bg-white text-md text-black font-semibold">
                                                 DRAWING NO
                                             </div>
-                                            <div className="bg-[#E8F9FF] p-2 border border-black rounded-md text-md text-black font-semibold text-start w-3/4">
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-3/4">
                                                 {item.partNo}
                                             </div>
-                                            <div className="w-1/5 items-start p-2 border border-black rounded-md bg-[#E8F9FF] text-md text-black font-semibold">
+                                            <div className="w-1/5 items-start p-1 border border-black rounded-md bg-[#E8F9FF] text-md text-black font-semibold">
                                                 {item.cm}
                                             </div>
                                         </div>
                                         <div className="flex flex-row mt-3 gap-5">
-                                            <span className="w-1/2 p-2 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
+                                            <span className="w-1/2 p-1 border border-black rounded-md bg-white text-md text-black font-semibold items-center">
                                                 PART NAME
                                             </span>
-                                            <div className="bg-[#E8F9FF] p-2 border border-black rounded-md text-md text-black font-semibold text-start w-full">
+                                            <div className="bg-[#E8F9FF] p-1 border border-black rounded-md text-md text-black font-semibold text-start w-full">
                                                 {item.partName}
                                             </div>
                                         </div>
 
                                         <div className="flex flex-row mt-4 gap-5">
-                                            <div className="w-1/2 items-center p-2 border border-black rounded-md bg-white text-md text-black font-semibold">
+                                            <div className="w-1/2 items-center p-1 border border-black rounded-md bg-white text-md text-black font-semibold">
                                                 QTY
                                             </div>
                                             <Input
@@ -639,10 +639,9 @@ function AuditeeScanData() {
                             </div>
                         ))
                     ) : scannedData ? (
-                        <p className="mt-4 text-red-500"></p>
+                        <p className="mt-4 text-red-500">ไม่พบข้อมูล QrCode นี้ในระบบ</p>
                     ) : null}
                 </div>
-
 
                 <ToastContainer
                     position="top-right"
@@ -662,4 +661,4 @@ function AuditeeScanData() {
     );
 };
 
-export default AuditeeScanData;
+export default AuditeeScanDatatest;

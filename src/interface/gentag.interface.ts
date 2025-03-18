@@ -28,8 +28,16 @@ export interface TagInfo {
     qrCode: string;
 }
 
+{/*serch data for normal print tag */}
 export interface DataTag {
     paramWCNO: string;
+}
+
+{/*serch data for select model about parint tag */}
+
+export interface DataTagRePrint {
+    paramWCNO: string;
+    paramModel: string;
 }
 
 {/*history auditee person*/ }

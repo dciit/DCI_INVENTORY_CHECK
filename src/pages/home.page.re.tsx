@@ -4,9 +4,10 @@ import { CameraTwoTone, GoldTwoTone, PlusCircleTwoTone, PrinterTwoTone, ProfileT
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Imgbg from "../assets/daikin.webp";
+import { Collapse, CollapseProps } from "antd";
 
 
-function HomePage() {
+function HomePageRe() {
 
 
     const navigate = useNavigate();
@@ -23,10 +24,10 @@ function HomePage() {
         { route: '/adtorsumfinal', title: 'สรุปการยิงนับ Auditor Summary', icon: <GoldTwoTone />, show: true },
         { route: '/comparesum', title: 'Summary Amount', icon: <GoldTwoTone />, show: special },
         { route: '/gentag', title: 'Print Tag', icon: <PrinterTwoTone />, show: true },
-        { route: '/regentag', title: 'Print Tag (Repetitive)', icon: <PrinterTwoTone />, show: special},
+        { route: '/regentag', title: 'Print Tag (Repetitive)', icon: <PrinterTwoTone />, show: special },
         { route: '/commit', title: 'หน้าสรุป (ALPHA)', icon: <ProfileTwoTone />, show: true },
         { route: '/commitreview', title: 'หน้าสรุป', icon: <ProfileTwoTone />, show: true },
-        { route: '/accessright', title: 'AeccessRight', icon: <PlusCircleTwoTone />,  show: true}
+        { route: '/accessright', title: 'AeccessRight', icon: <PlusCircleTwoTone />, show: true }
     ];
 
     const mnt = [
@@ -39,7 +40,7 @@ function HomePage() {
         { route: '/comparesum', title: 'Summary Amount', icon: <GoldTwoTone />, show: special },
         { route: '/gentag', title: 'Print Tag', icon: <PrinterTwoTone />, show: true },
         { route: '/commitreview', title: 'หน้าสรุป', icon: <ProfileTwoTone />, show: true }
-        
+
     ];
 
 
@@ -69,15 +70,32 @@ function HomePage() {
         navigate(`/login`);
         return; // Make sure to stop the execution after navigation
     }
-    console.log(redux.authen.role)
+    // console.log(redux.authen.role)
+
+
+    // const filteredAdminMenu = admin.filter((item) => item.show);
+
+
+    const items: CollapseProps["items"] = oMenu.map((oItem: any, index: number) => ({
+        key: index,
+        label: (
+            <div
+                className="flex items-center gap-2 cursor-pointer p-2 rounded-lg transition"
+                onClick={() => navigate(oItem.route)}
+            >
+                <div className="text-xl">{oItem.icon}</div>
+                <span className="text-lg font-semibold">{oItem.title}</span>
+            </div>
+        ),
+    }));
 
 
     return (
         <>
             <Navbar />
             <div
-                className="hero bg-slate-200 min-h-[200px] sm:min-h-[300px] md:min-h-[500px]"
-                style={{ backgroundImage: `url(${Imgbg})`, opacity: 0.5,  backgroundSize: "cover", backgroundPosition: "center" }}
+                className="hero bg-slate-200 min-h-[100px] sm:min-h-[300px] md:min-h-[500px]"
+                style={{ backgroundImage: `url(${Imgbg})`, opacity: 0.5, backgroundSize: "cover", backgroundPosition: "center" }}
             >
                 <div className="hero-content text-center">
                     <div className="max-w-full">
@@ -85,31 +103,15 @@ function HomePage() {
                     </div>
                 </div>
             </div>
-            <div className="h-full bg-sky-50 flex flex-col p-4 sm:p-6 overflow-y-auto">
+            <div className="h-full bg-white flex flex-col p-4 sm:p-6 overflow-y-auto">
                 <p className="text-lg sm:text-lg md:text-xl lg:text-xl font-bold ml-16">รายการ</p>
                 <hr className="border border-black mx-16" />
-                <div className="container max-w-full px-6 sm:px-6 md:px-8 lg:px-10 rounded-lg">
-                    {/* <div className="h-full bg-[#3674B5]/75 p-3 sm:p-2 rounded-lg mt-3 mx-6"> */}
-                        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 m-7">
-                            {oMenu.map((oItem: any, index: number) => (
-                                <div
-                                    key={index}
-                                    onClick={() => navigate(oItem.route)}
-                                    className="flex flex-col items-center sm:w-auto min-w-full max-w-full px-2 py-10 bg-[#D4EBF8] border border-gray-400 rounded-xl hover:bg-[#e8f7fe] cursor-pointer shadow-md transition-transform duration-200 hover:scale-105"
-                                >
-                                    <div className="text-3xl sm:text-4xl">{oItem.icon}</div>
-                                    <h5 className="mt-3 text-sm sm:text-sm md:text-2xl font-bold text-gray-900 text-center">
-                                        {oItem.title}
-                                    </h5>
-                                </div>
-                            ))}
-                        </div>
-                    {/* </div> */}
+                <div className="container max-w-full px-6 sm:px-10 md:px-10 lg:px-16 rounded-lg mt-2">
+                    <Collapse accordion items={items} className=" bg-white rounded-lg" />
                 </div>
-
             </div>
         </>
     );
 }
 
-export default HomePage;
+export default HomePageRe;

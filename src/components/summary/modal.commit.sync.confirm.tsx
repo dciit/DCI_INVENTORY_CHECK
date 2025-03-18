@@ -1,4 +1,4 @@
-import { ParamSync } from '@/pages/commit';
+import { ParamSync } from '@/pages/reports/commit';
 import { APIConfirmSync } from '@/service/invsave.service';
 import { Button, Modal } from 'antd'
 import { useState } from 'react'

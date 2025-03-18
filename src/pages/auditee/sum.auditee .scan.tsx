@@ -2,7 +2,7 @@
 // import { TagInfo } from "@/interface/gentag.interface";
 import Navbar from "@/components/main/navbar";
 import { ReduxInterface } from "@/interface/main.interface";
-import { FacData, SummatyTagCheckADTE } from "@/interface/summarypart.interface"
+import { FacData, SummaryTagCheckADTE } from "@/interface/summarypart.interface"
 import { API_TEG_SUMCHECK_ADTE } from "@/service/conclusion.service";
 import { API_TEG_SELECT } from "@/service/tag.service";
 import { RefSelectProps, Select } from "antd";
@@ -14,7 +14,7 @@ function SumAuditeeScan() {
 
     const oAccount: ReduxInterface = useSelector((state: any) => state.reducer)
 
-    const [stagCheck, setTagCheck] = useState<SummatyTagCheckADTE[]>([])
+    const [stagCheck, setTagCheck] = useState<SummaryTagCheckADTE[]>([])
     const [factory, setFactoryData] = useState<String[]>([]);
 
     const [searchData, setSearchData] = useState<FacData>({

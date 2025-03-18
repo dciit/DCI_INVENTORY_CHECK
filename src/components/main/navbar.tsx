@@ -21,11 +21,11 @@ function Navbar() {
   }
 
   return (
-    <nav className="bg-[#3674B5] border-gray-200 dark:bg-gray-900 dark:border-gray-700 print:hidden">
+    <nav className="bg-[#1E2A5E] border-gray-200 dark:bg-gray-900 dark:border-gray-700 print:hidden">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-5">
         {/* Logo */}
         <a href={`/${base}/home`} className="flex items-center space-x-3">
-          <Button icon={<HomeOutlined />} type='primary' onClick={() => navigate(`../home`)}></Button>
+          <Button icon={<HomeOutlined />} onClick={() => navigate(`../home`)}></Button>
           <span className="text-2xl font-semibold text-white">DCI - นับสต๊อคประจำปี</span>
         </a>
 
@@ -78,7 +78,7 @@ function Navbar() {
                 </li> */}
 
             {/* Logout */}
-            <li className="py-3 px-3 text-white hover:text-gray-200 font-semibold">{redux.authen.sName}</li>
+            <li className="py-2 px-3 text-white hover:text-gray-200 font-semibold">{redux.authen.sName}</li>
             <li>
               <button
                 className="py-2 px-3 text-white hover:text-gray-200 font-semibold"

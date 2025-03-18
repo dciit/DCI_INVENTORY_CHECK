@@ -1,99 +1,203 @@
 import { useEffect, useRef, useState } from 'react'
 import imgprinter from "../../assets/printer.jpg";
 import { QRCode, RefSelectProps, Select } from 'antd';
-import { useSelector } from 'react-redux';
-import { ReduxInterface } from '@/interface/main.interface';
-import { DataTag, TagInfo } from '@/interface/gentag.interface';
+// import { useSelector } from 'react-redux';
+// import { ReduxInterface } from '@/interface/main.interface';
+import { DataTagRePrint, TagInfo } from '@/interface/gentag.interface';
 import { API_TEG_SELECT } from '@/service/tag.service';
 import { API_SELECT_WCNO } from '@/service/partlist.service';
 import { Wcno } from '@/interface/compressorcheck';
 import dayjs from 'dayjs';
+import Navbar from '@/components/main/navbar';
+import { QRCodeCanvas } from 'qrcode.react';
 
 
 function GenTagCop() {
 
 
-    const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
+    // const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
 
     const [tagData, setTagData] = useState<TagInfo[]>([]);
     const [wcno, setWcno] = useState<Wcno[]>([]);
 
     const [loading, setLoading] = useState(false);
 
-    const [searchData, setSearchData] = useState<DataTag>({
+    const [searchData, setSearchData] = useState<DataTagRePrint>({
         paramWCNO: '',
+        paramModel: ''
+
     });
+
+    const [partno, setPartNo] = useState<string[]>([]);
+    // const [selectedModels, setSelectedModels] = useState<string[]>([]);
+    const [_filteredPartNo, setFilteredPartNo] = useState<string[]>([]);
 
 
 
 
     const refWCNO = useRef<RefSelectProps>(null)
 
+
     useEffect(() => {
         const fetchWcno = async () => {
             const wcnodata = await API_SELECT_WCNO();
             if (wcnodata.status !== false) {
                 setWcno(wcnodata);
-                setLoading(false);
             } else {
                 console.error("Error fetching wcno:", wcnodata.message);
             }
         };
 
+        fetchWcno();
+    }, []);
+
+    useEffect(() => {
+        if (!searchData.paramWCNO) return;
+        setLoading(true);
 
         const fetchTag = async () => {
-            const tagdata = await API_TEG_SELECT(oAccount.authen.mSetInfo?.setCode!,
-                oAccount.authen.mSetInfo?.ym!,
-                searchData.paramWCNO!);
-            if (tagdata.status !== false) {
-                setTagData(tagdata);
-                console.log(tagdata)
+            const data = await API_TEG_SELECT(
+                "SET20250217WPDC3U608341659000001",
+                "202502",
+                searchData.paramWCNO
+            );
+
+            console.log("Fetched tag data:", data);
+
+            if (data.status !== false) {
+                const uniqueModels: string[] = Array.from(new Set(data.map((item: TagInfo) => item.partNo)));
+                console.log("Unique Models:", uniqueModels);
+                setTagData(data);
+                setPartNo(uniqueModels);
+                setSearchData((prev) => ({ ...prev, paramModel: '' }));
             } else {
-                console.log('Error fetching tag', tagdata);
+                console.error("Error fetching tag", data);
+                setPartNo([]);
+                setTagData([]);
             }
+            setLoading(false);
         };
 
-
-        fetchWcno();
-        setLoading(false)
         fetchTag();
-
     }, [searchData.paramWCNO]);
 
-    if (loading) {
-        return <p>...loading</p>;
-    }
+    useEffect(() => {
+        if (!searchData.paramModel) {
+            setFilteredPartNo([]);
+        } else {
+            const filteredData: any = tagData.filter(item => item.partNo === searchData.paramModel);
+            setFilteredPartNo(filteredData);
+        }
+    }, [searchData.paramModel, tagData]);
 
+
+    // const toggleModelSelection = (model: string) => {
+    //     setSelectedModels((prev) =>
+    //         prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
+    //     );
+    // };
+
+    // useEffect(() => {
+    //     const fetchWcno = async () => {
+    //         const wcnodata = await API_SELECT_WCNO();
+    //         if (wcnodata.status !== false) {
+    //             setWcno(wcnodata);
+    //         } else {
+    //             console.error("Error fetching wcno:", wcnodata.message);
+    //         }
+    //     };
+
+    //     const fetchTag = async () => {
+    //         if (!searchData.paramWCNO) return;
+    //         setLoading(true);
+
+    //         const data = await API_TEG_SELECT(
+    //             'SET20250217WPDC3U608341659000001',
+    //             '202502',
+    //             searchData.paramWCNO!);
+
+    //         console.log("Fetched tag data:", data); 
+
+    //         if (data.status !== false) {
+    //             setTagData(data);
+
+    //             const uniqueModels: string[] = Array.from(
+    //                 new Set(data.map((item: TagInfo) => item.partNo))
+    //             );
+
+    //             console.log("Unique Models:", uniqueModels); 
+    //             setPartNo(uniqueModels);
+    //         } else {
+    //             console.error("Error fetching tag", data);
+    //         }
+
+    //         setLoading(false);
+    //     };
+
+
+    //     fetchWcno();
+    //     fetchTag();
+    // }, [searchData.paramWCNO]);
+
+    // const toggleModelSelection = (model: string) => {
+    //     setSelectedModels((prev) =>
+    //         prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
+    //     );
+    // };};
+
+    if (loading) return <p>...loading</p>;
 
 
     return (
         <div>
+            <Navbar/>
             <div className='flex flex-row gap-2'>
-                <a href="#" onClick={() => window.print()}>
+            <a   onClick={() => window.print()}>
                     <img src={imgprinter} alt="Print" className="mt-2 w-24 h-16 print:hidden" />
                 </a>
                 <div className="mt-2 flex justify-between gap-2 print:hidden">
-                    <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
+                    <span className=" px-6 py-2 h-12 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
                     <Select
                         ref={refWCNO}
                         showSearch
-                        placeholder="Select a person"
+                        placeholder="Select Work Center"
                         optionFilterProp="label"
-                        className="w-52 h-14 border rounded-lg"
+                        className="w-52 h-12 border rounded-lg"
                         value={searchData.paramWCNO}
                         onChange={(value) => setSearchData({ ...searchData, paramWCNO: value })}
                         options={wcno.map((wc) => ({ value: wc.wcno, label: wc.wcno }))}
                     />
 
                 </div>
+                {partno.length > 0 && (
+                    <div className='mt-2 flex justify-between gap-2 print:hidden'>
+                        <span className='px-6 py-2 h-12 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center'>Model</span>
+                        <Select
+                            mode='multiple'
+                            showSearch
+                            placeholder="Select Model"
+                            optionLabelProp="label"
+                            className="w-52 h-12 border rounded-lg"
+                            value={searchData.paramModel}
+                            onChange={(value) => setSearchData({ ...searchData, paramModel: value })}
+                            options={partno.map((model) => ({ value: model, label: model }))}
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="w-[210mm] h-[297mm]  mx-auto">
                 {[...Array(Math.ceil(tagData.length / 4))].map((_, pageIndex) => (
                     <div key={pageIndex} className="page h-full break-after-page">
                         <div className="grid grid-rows-[25%_25%_25%_25%]  h-full">
-                            {tagData.slice(pageIndex * 4, (pageIndex + 1) * 4)
-                                .filter((item) => item.wcno.startsWith(""))
+                            {tagData
+                                .filter((item) => {
+                                    if (searchData.paramModel.length > 0) {
+                                        return searchData.paramModel.includes(item.partNo)
+                                    }
+                                    return true;
+                                }) 
+                                .slice(pageIndex * 4, (pageIndex + 1) * 4)
                                 .map((item, rowIndex) => (
                                     // oLineTyps.map((ln) => (
                                     <div key={rowIndex} className="bg-white flex border-b p-4 border-dashed items-center justify-center relative ">
@@ -189,7 +293,7 @@ function GenTagCop() {
                                         </div>
                                         <div className='flex flex-col gap-0 h-full w-full justify-between'>
                                             <div className="flex flex-row justify-end mt-5">
-                                                <QRCode type="canvas" className='p-0' value={JSON.stringify(item.qrCode)} size={90}
+                                                <QRCodeCanvas  className='p-0' value={JSON.stringify(item.qrCode)} size={90}
                                                     color="#000" // Black QR code
                                                     bgColor="transparent" // Transparent background
                                                 // style={{

@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import imgprinter from "../../assets/printer.jpg";
 import { QRCode, RefSelectProps, Select } from 'antd';
-import { useSelector } from 'react-redux';
-import { ReduxInterface } from '@/interface/main.interface';
+// import { useSelector } from 'react-redux';
+// import { ReduxInterface } from '@/interface/main.interface';
 import { DataTag, TagInfo } from '@/interface/gentag.interface';
 import { API_TEG_SELECT } from '@/service/tag.service';
 import { API_SELECT_WCNO } from '@/service/partlist.service';
 import { Wcno } from '@/interface/compressorcheck';
 import dayjs from 'dayjs';
 import Navbar from '@/components/main/navbar';
+import {QRCodeCanvas} from 'qrcode.react';
 
 
 function GenTag() {
 
 
-    const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
+    // const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
 
     const [tagData, setTagData] = useState<TagInfo[]>([]);
     const [wcno, setWcno] = useState<Wcno[]>([]);
@@ -43,13 +44,15 @@ function GenTag() {
 
 
         const fetchTag = async () => {
-            const tagdata = await API_TEG_SELECT(oAccount.authen.mSetInfo?.setCode!,
-                oAccount.authen.mSetInfo?.ym!,
+            const tagdata = await API_TEG_SELECT(
+                'SET20250217WPDC3U608341659000001',
+                '202502',
                 searchData.paramWCNO!);
             if (tagdata.status !== false) {
-                setTagData(tagdata.filter((d: any) => d.lineType == 'EXPLODE'));
-                //setTagData(tagdata);
-                //console.log(tagdata)
+                // setTagData(tagdata.filter((d: any) => d.lineType == 'EXPLODE'));
+                console.log(tagData)
+                setTagData(tagdata);
+                // console.log(tagdata)
             } else {
                 //console.log('Error fetching tag', tagdata);
             }
@@ -72,17 +75,17 @@ function GenTag() {
         <div>
             <Navbar />
             <div className='flex flex-row gap-2'>
-                <a href="#" onClick={() => window.print()}>
+                <a   onClick={() => window.print()}>
                     <img src={imgprinter} alt="Print" className="mt-2 w-24 h-16 print:hidden" />
                 </a>
                 <div className="mt-2 flex justify-between gap-2 print:hidden">
-                    <span className="p-2.5 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
+                    <span className="h-12 w-16 p-2 bg-[#607EAA] border border-black rounded-md text-lg text-white font-semibold text-center">W/C</span>
                     <Select
                         ref={refWCNO}
                         showSearch
                         placeholder="Select a person"
                         optionFilterProp="label"
-                        className="w-52 h-14 border rounded-lg"
+                        className="w-52 h-12 border rounded-lg"
                         value={searchData.paramWCNO}
                         onChange={(value) => setSearchData({ ...searchData, paramWCNO: value })}
                         options={wcno.map((wc) => ({ value: wc.wcno, label: wc.wcno }))}
@@ -139,7 +142,7 @@ function GenTag() {
                                                         <p className="text-black text-sm font-light text-">
                                                             สายการผลิต: {item.wcnO_NAME}
                                                         </p>
-                                                    )}l
+                                                    )}
                                             </div>
 
                                             <p className="text-black text-sm font-light">หน่วย : {item.whum}</p>
@@ -197,7 +200,7 @@ function GenTag() {
                                         </div>
                                         <div className='flex flex-col gap-0 h-full w-full justify-between'>
                                             <div className="flex flex-row justify-end mt-5">
-                                                <QRCode type="canvas" className='p-0' value={JSON.stringify(item.qrCode)} size={90}
+                                                <QRCodeCanvas   className='p-0' value={JSON.stringify(item.qrCode)} size={90}
                                                     color="#000" // Black QR code
                                                     bgColor="transparent" // Transparent background
                                                 // style={{

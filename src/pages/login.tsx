@@ -4,6 +4,7 @@ import { API_LOGIN_EMPLOYEE } from '@/service/login.service';
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 // import { useNavigate } from 'react-router-dom';
+import { KeyboardEvent } from 'react';
 import { Button, Input, InputRef } from 'antd';
 import {
   LockOutlined,
@@ -55,6 +56,8 @@ function Login() {
           navigate('/home');
         } else if (oAccount.authen.role === "AUDITOR") {
           navigate('/home');
+        } else if (oAccount.authen.role === "MENAGMENT") {
+          navigate('/home');
         } else {
           navigate(`/login`);
         }
@@ -83,26 +86,27 @@ function Login() {
     if (loginData.ParamUser != '' && loginData.ParamPass != '') {
 
 
-      const oRole = ['ADMIN', 'AUDITEE', 'AUDITOR'];
+      const oRole = ['ADMIN', 'AUDITEE', 'AUDITOR','MANAGEMENT'];
       let resLogin = await API_LOGIN_EMPLOYEE(loginData.ParamUser, loginData.ParamPass);
-
+      console.log(resLogin)
       if (resLogin != null) {
         if (resLogin.code == null) {
           notifyErr('ไม่สามารถเข้าสู่ระบบได้ เนื่องจากรหัสพนักงานนี้ ไม่ถูกต้อง')
           return false;
         }
-        if (resLogin.role == null) {
-          notifyErr('ไม่สามารถเข้าสู่ระบบได้ เนื่องจาก Role ไม่ถูกต้อง')
-          return false;
-        }
+        // if (resLogin.role == null) {
+        //   notifyErr('ไม่สามารถเข้าสู่ระบบได้ เนื่องจาก Role ไม่ถูกต้อง')
+        //   return false;
+        // }
         if (oRole.includes(resLogin.role)) {
           dispatch({
             type: 'LOGIN', payload: resLogin
           });
-
+          console.log('home')
           notifyOk("Login Successfully");
           navigate(`/home`);
         } else {
+          console.log('not home')
           setLogin({ ...login, load: false, message: `ไม่สารถเข้าสู่ระบบได้` });
           notifyErr("ไม่สารถเข้าสู่ระบบได้");
         }
@@ -134,7 +138,11 @@ function Login() {
     }
   }, [loginData])
 
-
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key == 'Enter') {
+      handleLogin()
+    }
+  };
   return (
     <div className='flex items-center justify-center h-full bg-[#1E2A5E] min-h-screen px-4'>
       <div className="container rounded-2xl border shadow-lg p-5 text-center bg-[#FBFBFB] max-w-lg md:max-w-3xl">
@@ -159,9 +167,9 @@ function Login() {
                     type='text'
                     id='username'
                     placeholder='Enter username'
-                    autoFocus
                     className="w-full"
                     onChange={(e) => setLoginData({ ...loginData, ParamUser: e.target.value })}
+                    autoFocus  onKeyDown={handleKeyPress} 
                   />
                 </div>
                 <div className='mt-4'>
@@ -180,6 +188,7 @@ function Login() {
                       placeholder='*******'
                       className="w-full"
                       onChange={(e) => setLoginData({ ...loginData, ParamPass: e.target.value })}
+                      autoFocus onKeyDown={handleKeyPress}
                     />
                   </div>
                 </div>

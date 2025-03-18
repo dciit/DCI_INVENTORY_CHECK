@@ -1,63 +1,118 @@
 
-import { Modal } from "antd";
+import { HistoryAuditee } from "@/interface/summarypart.interface";
+import { LoadingOutlined } from "@ant-design/icons";
+import { Modal, Spin } from "antd";
+import Table, { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
-
-function TagHistoryAuditee(props: any) {
-
-    const { open, close, hisData } = props;
+import { useEffect, useState } from "react";
 
 
-    if (!hisData) {
-        return <p>No data available.</p>;
-    }
+interface Props {
+    open: boolean;
+    close: any;
+    history: HistoryAuditee[];
+}
 
+function TagHistoryAuditee(props: Props) {
+
+    const { open, close, history } = props;
+    const [loading, setLoading] = useState<boolean>(true);
+
+
+    useEffect(() => {
+        if (!history) {
+            setLoading(false)
+        }
+    }, [history])
+
+
+    const columns: ColumnsType<HistoryAuditee> = [
+        {
+            title: 'WC',
+            dataIndex: 'wcno',
+            key: 'wcno',
+            align: 'center' as 'center',
+            width: 120
+        },
+        {
+            title: <div className="text-center">TAG NO</div>,
+            dataIndex: 'tagNo',
+            key: 'tagno',
+            align: 'center' as 'center',
+            width: 200
+        },
+        {
+            title: <div className="text-center">PART</div>,
+            dataIndex: 'partNo',
+            key: 'partNo',
+            render: (_text: any, row: { partNo: string, partName: string }) => {
+                return (
+                    <span>
+                        {row.partNo} <br /> {row.partName}
+                    </span>
+                )
+            }
+        },
+        {
+            title: <div className="text-center">ANUDITEE QTY</div>,
+            dataIndex: 'auditeeQty',
+            key: 'auditeeQty',
+            align: 'right' as 'right',
+            sorter: (a: any, b: any) => a.auditeeQty - b.auditeeQty,
+            render: (_text: any, row: { auditeeQty: number }) => {
+                return row.auditeeQty.toLocaleString();
+            }
+        },
+        {
+            title: <div className="text-center">AUDITEE</div>,
+            dataIndex: 'auditeeBy',
+            key: 'auditeeBy',
+            render: (_text: any, row: { auditeeBy: string, auditeeDate: string }) => {
+                return (
+                    <span>
+                        {row.auditeeBy} <br /> ({dayjs(row.auditeeDate).format('DD/MMM/YYYY HH:mm')})
+                    </span>
+                )
+            }
+        },
+    ]
 
     return (
         <>
-            <Modal open={open} onCancel={() => close(false)} onClose={() => close(false)} footer={<></>} width='90%' height='80%' >
-                <head className="flex flex-col px-8 py-8">
-                    <div className="flex flex-row justify-center items-cente mt-3">
-                        <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#E1EACD] text-3xl text-black font-bold text-center">
-                            ประวัติการบันทึกรายการนับวัตถุดิบของแต่ละสายการผลิต (Auditor)
-                        </p>
-                    </div>
-                </head >
-                <body className="flex w-full p-4 justify-center mt-5">
-                    <div className="overflow-x-auto max-h-[700px]">
+            {loading && open && (
+                <Modal open={open} onCancel={() => close(false)} onClose={() => close(false)} footer={<></>} width='80%' height='80%' >
+                    <head className="flex flex-col px-8 py-8">
+                        <div className="flex flex-row justify-center items-cente mt-3">
+                            <p className="w-full mr-4 py-8 border border-gray-500 rounded-2xl bg-[#D4EBF8] text-3xl text-black font-bold text-center">
+                                ประวัติการบันทึกรายการนับวัตถุดิบของแต่ละสายการผลิต (Auditee)
+                            </p>
+                        </div>
+                    </head >
+                    <body className="flex w-full py-4 px-9 justify-center mt-5">
+                        <div className="overflow-x-auto max-h-[700px]">
+                            {
+                                history && history.length > 0 ? (
+                                    <Table<HistoryAuditee>
+                                        columns={columns}
+                                        dataSource={history}
+                                        rowKey={(recode: { wcno: any }) => recode.wcno}
+                                        pagination={false}
+                                        scroll={{ y: 500 }}
+                                    />
+                                ) : (
+                                    <div className="flex flex-col justify-center h-full w-full">
+                                        <Spin indicator={<LoadingOutlined spin />} size='large'/>
+                                        <span>กำลังโหลดข้อมูล</span>
+                                    </div>
+                                )
+                            }
 
-                        <table className="border-separate border-spacing-0 border border-gray-400 w-full table-fixed">
-                            <thead>
-                                <tr className="bg-[#F9F5EB]">
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-md" >WC</th>
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >TAG NO</th>
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >Part</th>
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >Auditor Qty</th>
-                                    <th className="border border-gray-600 sticky top-0 bg-[#F9F5EB] z-[10] px-4 py-2 shadow-sm" >Auditor</th>
-                                </tr>
-                            </thead>
+                        </div>
+                    </body>
+                </Modal>
+            )
+            }
 
-                            <tbody>
-                                {hisData && hisData.map((item: any, index: number) => (
-                                    // oLineTyps.map((ln) => ())
-                                    <tr key={index} className=" border-gray-200 hover:bg-gray-100 ">
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{item.wcno}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-center">{item.tagNo}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-left">{item.partNo} {item.cm}<br />{item.partName}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-right">
-                                            {item.auditeeBy != '' && (<>{item.auditeeQty.toLocaleString("en-US", {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}</>)}</td>
-                                        <td className="border border-gray-600 px-4 py-2 text-center">
-                                            {item.auditeeBy != '' && (<>{item.auditeeBy}<br />{dayjs(item.auditeeDate).format("DD/MMM/YYYY HH:mm")}</>)}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </body>
-            </Modal>
         </>
     )
 }

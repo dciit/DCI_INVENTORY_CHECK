@@ -13,30 +13,6 @@ html, body, #root {
   width: 100%;
 }
 
-@media print {
-  @page {
-    size: A3 landscape; /* ตั้งค่ากระดาษ A3 แนวนอน */
-    margin: 10mm; 
-  }
-
-  .print-a3 {
-    width: 100%;
-    font-size: 5px; 
-  }
-
-  table {
-    page-break-inside: auto;
-  }
-
-  thead {
-    display: table-header-group;
-  }
-
-  tfoot {
-    display: table-footer-group;
-  }
-
-  tr {
-    page-break-inside: avoid;
-  }
+.custom-header {
+  background-color: #faf4c9;
 }

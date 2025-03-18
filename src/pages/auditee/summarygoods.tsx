@@ -5,8 +5,8 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { SummaryData, SummaryHeader, SummaryPartList } from "@/interface/summarypart.interface";
 import { API_SUMMARY_DATA, API_SUMMARY_HEADER, API_SUMMARY_PARTLIST } from "@/service/summarypart.service";
-import { useSelector } from "react-redux";
-import { ReduxInterface } from "@/interface/main.interface";
+// import { useSelector } from "react-redux";
+// import { ReduxInterface } from "@/interface/main.interface";
 import { Wcno } from "@/interface/compressorcheck";
 import { API_SELECT_WCNO } from "@/service/partlist.service";
 import Navbar from "@/components/main/navbar";
@@ -15,7 +15,7 @@ import { CircularProgress } from "@mui/material";
 
 function SummerizeGoods() {
 
-    const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
+    // const oAccount: ReduxInterface = useSelector((state: any) => state.reducer);
     const navigate = useNavigate();
     const refWCNO = useRef<RefSelectProps>(null)
 
@@ -51,24 +51,22 @@ function SummerizeGoods() {
 
     const loadData = async () => {
         setIsLoad(true);
+        setSumPartList
 
-        const oSumHeaders = await API_SUMMARY_HEADER(oAccount.authen.mSetInfo?.setCode!, WCNO);
-        // console.log(oSumHeaders);
+        const oSumHeaders = await API_SUMMARY_HEADER('SET20250217WPDC3U608341659000001', WCNO);
         if (oSumHeaders.status !== false) {
             SetSumHeader(oSumHeaders);
         } else {
-            // console.error("Error fetching summary headers");
         }
 
-        const oSumPartlists = await API_SUMMARY_PARTLIST(oAccount.authen.mSetInfo?.setCode!, WCNO);
-        // console.log(oSumPartlists);
+        const oSumPartlists = await API_SUMMARY_PARTLIST('SET20250217WPDC3U608341659000001', WCNO);
         if (oSumPartlists.status !== false) {
             setSumPartList(oSumPartlists);
         } else {
             // console.error("Error fetching summary part lists");
         }
 
-        const oSumDatas = await API_SUMMARY_DATA(oAccount.authen.mSetInfo?.setCode!, WCNO);
+        const oSumDatas = await API_SUMMARY_DATA('SET20250217WPDC3U608341659000001', WCNO);
         // console.log(oSumDatas);
         if (oSumDatas.status !== false) {
             setSumData(oSumDatas);
@@ -129,18 +127,115 @@ function SummerizeGoods() {
         saveAs(dataBlob, `${fileName}.xlsx`);
     };
 
+    const handlePrint = () => {
+        if (sumHeader.length === 0 || sumPartlist.length === 0 || sumData.length === 0) {
+            alert("ไม่มีข้อมูลประวัติสำหรับพิมพ์");
+            return;
+        }
+    
+        const printWindow = window.open("", "_blank");
+        if (printWindow) {
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="th">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>ประวัติการ Auditee</title>
+                        <style>
+                            @page { 
+                                size: A3 landscape; 
+                                margin: 10mm; 
+                            }
+                            body {
+                                font-family: Arial, sans-serif;
+                            }
+                            table { 
+                                width: 100%; 
+                                border-collapse: collapse; 
+                            }
+                            th, td { 
+                                border: 1px solid black; 
+                                padding: 8px; 
+                                text-align: center; 
+                                font-size: 12px;
+                            }
+                            th { 
+                                background-color: #f2f2f2; 
+                            }
+                            .table-container {
+                                width: 100%;
+                                overflow-x: auto;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h2 style="text-align: center;">ประวัติการ Auditee</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">NO</th>
+                                        <th rowspan="2">WC</th>
+                                        <th rowspan="2">Tag No</th>
+                                        <th rowspan="2">Part No</th>
+                                        <th rowspan="2">CM</th>
+                                        <th rowspan="2">PART NAME</th>
+                                        <th colspan="1">Last Update</th> 
+                                        ${sumHeader.map(row => `<th>${row.lastDate}</th>`).join('')}
+                                    </tr>
+                                    <tr>
+                                        <th>TOTAL</th>
+                                        ${sumHeader.map(row => `<th>${row.model}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sumPartlist.length > 0 ? sumPartlist.map((row, rowIndex) => `
+                                        <tr>
+                                            <td>${rowIndex + 1}</td>
+                                            <td>${row.wcno}</td>
+                                            <td>${row.tagNo}</td>
+                                            <td>${row.partNo}</td>
+                                            <td>${row.cm}</td>
+                                            <td>${row.partName}</td>
+                                            <td>${row.sumQty.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
+                                            ${sumHeader.map(col => `
+                                                <td>
+                                                    ${sumData.find(data => data.model === col.model && data.partNo == row.partNo && row.cm == data.cm)?.qty.toLocaleString("en-US") || 0}
+                                                </td>
+                                            `).join('')}
+                                        </tr>
+                                    `).join('') : `
+                                        <tr>
+                                            <td colspan="${sumHeader.length + 7}" class="text-center text-red-600">ไม่พบข้อมูล</td>
+                                        </tr>
+                                    `}
+                                </tbody>
+                            </table>
+                        </div>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    };
+    
+    
+
+
     return (
         <>
             <Navbar />
             <head className="flex flex-col px-8 pt-8">
                 <div className="flex flex-row justify-center items-center print:hidden">
-                    <p className="text-3xl p-6 w-full border border-black rounded-lg bg-[#FFEFC8] font-bold text-center">
+                    <p className="text-3xl p-6 w-full border border-black rounded-lg bg-[#D4EBF8] font-bold text-center">
                         สรุปรายการ Part ของ Assembly Line โดย Auditee
                     </p>
                 </div>
                 <div className="flex flex-row w-full gap-3 mt-3 print:hidden">
                     <div className="flex justify-start gap-2">
-                        <span className="p-2.5 border border-black bg-[#607EAA] text-lg text-white font-semibold text-center  rounded-lg">
+                        <span className="p-2.5 border border-black bg-yellow-50 text-lg text-black font-semibold text-center  rounded-lg">
                             W/C
                         </span>
                         <Select
@@ -173,21 +268,26 @@ function SummerizeGoods() {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-row w-full mt-4 justify-end print:hidden">
+                <div className="flex flex-row w-full mt-4 justify-end print:hidden pr-5">
                     <button onClick={() => navigate(`/auditeecheck`)} className="text-[#003092] border-2 border-[#003092] bg-white hover:bg-[#003092] hover:text-white focus:outline-none focus:ring-blue-800 font-medium rounded-lg text-lg  px-3 py-0  text-center ">
                         <GoldTwoTone className="mr-3" />
                         หน้าแตก Part
                     </button>
-                    <button 
+                    <button
                         onClick={() => exportToExcel(sumPartlist, sumData, "SummaryCheck")}
-                        className="text-green-700 border-2 border-green-700 bg-white hover:bg-green-600 hover:text-white focus:outline-none focus:ring-green-700 font-medium rounded-lg text-lg  px-3 py-3 ml-3  text-center "
-                        >
+                        className="text-green-700 border-2 border-green-700 bg-white hover:bg-green-600 hover:text-white focus:outline-none focus:ring-green-700 font-medium rounded-lg text-lg  px-3 py-3 ml-5  text-center "
+                    >
                         Export to Excel
                     </button>
-
+                    <button
+                        onClick={handlePrint}
+                        className="text-yellow-500 border-2 border-yellow-500 bg-white hover:bg-yellow-500 hover:text-white focus:outline-none focus:ring-green-700 font-medium rounded-lg text-lg  px-3 py-3 ml-5  text-center "
+                    >
+                        Print
+                    </button>
                 </div>
             </head >
-            <body className="mt-2">
+            <body className="mt-2 px-8">
                 <div ref={contentRef} className="overflow-x-auto max-h-[700px]">
                     {
                         !isLoad ? (
@@ -199,17 +299,17 @@ function SummerizeGoods() {
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-0 bg-white z-[20] w-[50px] text-center shadow-md" rowSpan={2}>NO</th>
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[50px]  bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>WC</th>
                                             <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[110px] bg-white z-20 w-[160px] text-center shadow-md" rowSpan={2}>Tag No</th>
-                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[110px] bg-white z-20 w-[160px] text-center shadow-md" rowSpan={2}>Part No</th>
-                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[270px] bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
-                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[330px] bg-white z-20 w-[280px] text-center shadow-md" rowSpan={2}>PART NAME</th>
+                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[270px] bg-white z-20 w-[160px] text-center shadow-md" rowSpan={2}>Part No</th>
+                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[430px] bg-white z-20 w-[60px] text-center shadow-md" rowSpan={2}>CM</th>
+                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[490px] bg-white z-20 w-[280px] text-center shadow-md" rowSpan={2}>PART NAME</th>
 
-                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 bg-[#D7E5CA]  whitespace-nowrap w-[140px] text-center" colSpan={1}>Last Update</th>
+                                            <th className="border border-gray-600 px-4 py-2 sticky top-0 left-[770px] bg-[#D7E5CA] z-20  whitespace-nowrap w-[140px] text-center" colSpan={1}>Last Update</th>
                                             {sumHeader.map((row, rowindex) => (
                                                 <th key={rowindex} className="border border-gray-400 px-2 py-1 text-center w-[150px] sticky top-0 bg-[#D7E5CA]">{row.lastDate}</th>
                                             ))}
                                         </tr>
                                         <tr className="bg-gray-200">
-                                            <th className="border border-gray-600 px-4 py-2 sticky top-[42px] bg-[#D1E9F6] w-[140px] text-center">Total</th>
+                                            <th className="border border-gray-600 px-4 py-2 sticky top-[42px] left-[770px] bg-[#D1E9F6] z-20 w-[140px] text-center">Total</th>
                                             {sumHeader.map((row, rowIndex) => (
                                                 <th key={rowIndex} className="border border-gray-600 text-center max-w-full text-sm sticky top-[42px] bg-[#D1E9F6]">{row.model}</th>
                                             ))}
@@ -225,11 +325,11 @@ function SummerizeGoods() {
                                                         {rowIndex + 1}
                                                     </td>
                                                     <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-center shadow-md">{row.wcno}</td>
-                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[50px] bg-white z-10 w-[60px] text-center shadow-md">{row.tagNo}</td>
-                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[120px] whitespace-nowrap text-center shadow-md">{row.partNo}</td>
-                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[270px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
-                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[330px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partName}</td>
-                                                    <td className="border border-gray-400 px-4 py-2 font-bold text-right bg-sky-50 whitespace-nowrap">{row.sumQty.toLocaleString("en-US", {
+                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[110px] bg-white z-10 w-[60px] text-center shadow-md">{row.tagNo}</td>
+                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[270px] bg-white z-10 w-[120px] whitespace-nowrap text-center shadow-md">{row.partNo}</td>
+                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[430px] bg-white z-10 w-[60px] text-center shadow-md">{row.cm}</td>
+                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[490px] bg-white z-10 w-[200px] text-left whitespace-nowrap shadow-md">{row.partName}</td>
+                                                    <td className="border border-gray-400 px-4 py-2 sticky left-[770px] z-10 font-bold text-right bg-sky-50 whitespace-nowrap">{row.sumQty.toLocaleString("en-US", {
                                                         minimumFractionDigits: 0,
                                                         maximumFractionDigits: 2,
                                                     })}</td>

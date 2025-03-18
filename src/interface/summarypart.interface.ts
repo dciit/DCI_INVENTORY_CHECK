@@ -28,7 +28,7 @@ export interface SummaryData {
 
 {/*conclusion auditee*/ }
 
-export interface SummatyTagCheckADTE {
+export interface SummaryTagCheckADTE {
     key: React.Key;
     ivSetCode: string;
     wcno: string;
@@ -64,6 +64,8 @@ export interface FacData {
 export interface CompareSum {
     ivSetCode: string;
     ym: string;
+    factory: string;
+    product: string;
     wcno: number;
     wcnO_SName: string;
     wcnO_NAME: string;
@@ -109,4 +111,92 @@ export interface DataType {
     tagCountExplode: number;
     tagCountExplodeAuditee: number;
     tagCountExplodeAuditor: number;
+}
+
+
+export interface TagData {
+    auditeeBy: string;
+    auditeeDate: string
+    auditeeQty: number
+    auditeeStatus: string
+    auditorBy: string
+    auditorDate: string
+    auditorQty: number
+    auditorStatus: string
+    cm: string
+    crBy: string
+    crDate: string
+    ivSetCode: string
+    lineType: string
+    loca1: string
+    loca2: string
+    loca3: string
+    model: string
+    partName: string
+    partNo: string
+    qrCode: string
+    route: string
+    tagNo: string
+    wcnO_NAME: string
+    wcnO_SName: string
+    wcno: string
+    whum: string
+    ym: string
+}
+
+
+{/* auditee */}
+export interface HistoryAuditee {
+    ivSetCode: string;
+    ym: string;
+    wcno: string;
+    lineType: string;
+    partNo: string;
+    cm: string;
+    partName: string;
+    tagNo: string;
+    whum: string;
+    auditeeQty: number;
+    auditeeBy: string;
+    auditeeDate: string;
+}
+
+
+{/* Audiror */}
+export interface HistoryAuditor {
+    ivSetCode: string;
+    ym: string;
+    wcno: string;
+    lineType: string;
+    partNo: string;
+    cm: string;
+    partName: string;
+    tagNo: string;
+    whum: string;
+    auditorQty: number;
+    auditorBy: string;
+    auditorDate: string;
+}
+
+{/*commithead */}
+export interface CommitauditorHead {
+    grpCode: string;
+    grpInfo: any;
+    ivSetCode: string;
+    ym: string;
+    factory: string;
+    product: string;
+    wcno: string;
+    wcnO_SNAME: string;
+    wcnO_NAME: string;
+    balqty:number;
+    balamt: number;
+    bkqty:number;
+    bkamt: number;
+    phyqty: number
+   phyamt: number;
+    auditorQty: number;
+    auditorAMT: number;
+    diffQty: number;
+    diffAMT: number;
 }
